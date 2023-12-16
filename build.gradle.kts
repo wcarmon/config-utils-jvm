@@ -3,6 +3,11 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 val mvnGroupId = "io.github.wcarmon"
 val mvnArtifactId = "property-utils-jvm" // see settings.gradle.kts
 val mvnVersion = "1.0.0"
+//val ossrhPassword: String by project
+//val ossrhUsername: String by project
+
+//val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
+//val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
 
 repositories {
     mavenCentral()
@@ -79,7 +84,6 @@ publishing {
                     }
                 }
 
-
                 scm {
                     connection =
                         "scm:git:git@github.com:wcarmon/property-utils-jvm.git"
@@ -94,21 +98,24 @@ publishing {
 
     repositories {
         maven {
-            // change URLs to point to your repos, e.g. http://my.org/repo
-            val releasesRepoUrl = uri(layout.buildDirectory.dir("repos/releases")) // TODO: fix
+
+            // -- See ~/.gradle/gradle.properties
+            name = "ossrh" // prefix for property names
+            credentials(PasswordCredentials::class)
+
+            val releasesRepoUrl =
+                // TODO: fix
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+
             val snapshotsRepoUrl = uri(layout.buildDirectory.dir("repos/snapshots")) // TODO: fix
 
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl
             else releasesRepoUrl // TODO: fix
 
-            // s01.oss.sonatype.org
-//            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-
-            // See ~/.gradle/gradle.properties
-            credentials {
-//                username = properties.getProperty('mavenCentralUsername')
-//                password = properties.getProperty('mavenCentralPassword')
-            }
+//            credentials {
+//                username = ossrhUsername
+//                password = ossrhPassword
+//            }
 
 //            metadataSources {
 //                gradleMetadata()
