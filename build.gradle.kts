@@ -3,11 +3,9 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 val mvnGroupId = "io.github.wcarmon"
 val mvnArtifactId = "property-utils-jvm" // see settings.gradle.kts
 val mvnVersion = "1.0.0"
-//val ossrhPassword: String by project
-//val ossrhUsername: String by project
 
-//val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
-//val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
+val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
+val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
 
 repositories {
     mavenCentral()
@@ -101,7 +99,11 @@ publishing {
 
             // -- See ~/.gradle/gradle.properties
             name = "ossrh" // prefix for property names
-            credentials(PasswordCredentials::class)
+//            credentials(PasswordCredentials::class)
+            credentials {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
 
             val releasesRepoUrl =
                 // TODO: fix
@@ -111,11 +113,6 @@ publishing {
 
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl
             else releasesRepoUrl // TODO: fix
-
-//            credentials {
-//                username = ossrhUsername
-//                password = ossrhPassword
-//            }
 
 //            metadataSources {
 //                gradleMetadata()
