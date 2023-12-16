@@ -1,4 +1,4 @@
-package com.github.wcarmon.properties;
+package io.github.wcarmon.properties;
 
 import static java.util.Objects.requireNonNull;
 

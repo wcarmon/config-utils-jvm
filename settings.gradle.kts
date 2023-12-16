@@ -1,1 +1,1 @@
-rootProject.name = "wc-property-utils"
+rootProject.name = "property-utils-jvm"

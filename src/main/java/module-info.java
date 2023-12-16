@@ -1,5 +1,5 @@
-module com.github.wcarmon.properties {
+module io.github.wcarmon.properties {
     requires org.jetbrains.annotations;
 
-    exports com.github.wcarmon.properties;
+    exports io.github.wcarmon.properties;
 }
