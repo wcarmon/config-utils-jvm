@@ -47,8 +47,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a path to an existing directory
      */
     public static Path getExistingDirPath(Properties properties, String key) {
@@ -70,8 +70,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a path to an existing file
      */
     public static Path getExistingFilePath(Properties properties, String key) {
@@ -93,8 +93,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return value leniently interpreted as a boolean
      */
@@ -113,8 +113,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return an int or the default (never null)
      */
@@ -132,8 +132,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return a long or the default (never null)
      */
@@ -151,8 +151,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return a pattern or the default (never null)
      */
@@ -174,8 +174,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return a string or the (nullable) default
      */
@@ -194,8 +194,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return a URI or the (nullable) default
      */
@@ -218,8 +218,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @param defaultValue
      * @return a URI or the default, (never null)
      */
@@ -241,8 +241,8 @@ public final class PropertyFileUtils {
      *
      * <p>If the path exists, it must be a directory.
      *
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a path to an existing directory or to a non-existent potential directory
      */
     public static Path getRequiredDirPath(Properties properties, String key) {
@@ -263,8 +263,8 @@ public final class PropertyFileUtils {
      *
      * <p>If the path exists, it must be a regular file.
      *
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a path to an existing file or to a non-existent potential file
      */
     public static Path getRequiredFilePath(Properties properties, String key) {
@@ -281,8 +281,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return the int (never null)
      */
     public static int getRequiredInt(Properties properties, String key) {
@@ -298,8 +298,10 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * Parse a long from the value.
+     *
+     * @param properties instance to read
+     * @param key property name
      * @return a long, (never null)
      */
     public static long getRequiredLong(Properties properties, String key) {
@@ -315,11 +317,11 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * Path must be non-blank, but need not exist.
+     * Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
      *
-     * @param properties
-     * @param key
-     * @return
+     * @param properties instance to read
+     * @param key property name
+     * @return a path (which may or may not exist in a file system), never null
      */
     public static Path getRequiredPath(Properties properties, String key) {
         requireNonNull(properties, "properties is required and null.");
@@ -336,8 +338,8 @@ public final class PropertyFileUtils {
     /**
      * See https://datatracker.ietf.org/doc/html/rfc1340
      *
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a valid IP port
      */
     public static int getRequiredPort(Properties properties, String key) {
@@ -356,8 +358,10 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * Parse a Regex pattern from the value.
+     *
+     * @param properties instance to read
+     * @param key property name
      * @return a compiled Pattern (never null)
      */
     public static Pattern getRequiredRegexPattern(Properties properties, String key) {
@@ -372,8 +376,10 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * Read a string from the value.
+     *
+     * @param properties instance to read
+     * @param key property name
      * @return non-blank, non-empty, non-null string
      */
     public static String getRequiredString(Properties properties, String key) {
@@ -389,8 +395,10 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * Parse a URI from the value.
+     *
+     * @param properties instance to read
+     * @param key property name
      * @return a URI (never null)
      */
     public static URI getRequiredURI(Properties properties, String key) {
@@ -406,8 +414,8 @@ public final class PropertyFileUtils {
     }
 
     /**
-     * @param properties
-     * @param key
+     * @param properties instance to read
+     * @param key property name
      * @return a UUID from the value
      */
     public static UUID getRequiredUUID(Properties properties, String key) {

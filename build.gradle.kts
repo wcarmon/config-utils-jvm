@@ -66,14 +66,16 @@ publishing {
                         name = "MIT License"
                         url =
                             "https://raw.githubusercontent.com/wcarmon/property-utils-jvm/main/LICENSE"
+                        // http://www.opensource.org/licenses/mit-license.php
                     }
                 }
 
                 developers {
                     developer {
+                        email = "github@wcarmon.com"
                         id = "wcarmon"
                         name = "Wil Carmon"
-                        email = "github@wcarmon.com"
+                        organization = ""
                     }
                 }
 
@@ -81,9 +83,10 @@ publishing {
                 scm {
                     connection =
                         "scm:git:git@github.com:wcarmon/property-utils-jvm.git"
+                    //  "scm:git:git://github.com/wcarmon/property-utils-jvm.git"
                     developerConnection =
                         "scm:git:ssh://github.com:wcarmon/property-utils-jvm.git"
-                    url = "https://github.com/wcarmon/property-utils-jvm"
+                    url = "https://github.com/wcarmon/property-utils-jvm/tree/main"
                 }
             }
         }
@@ -98,6 +101,7 @@ publishing {
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl
             else releasesRepoUrl // TODO: fix
 
+            // s01.oss.sonatype.org
 //            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
 
             // See ~/.gradle/gradle.properties
