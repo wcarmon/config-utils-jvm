@@ -13,16 +13,17 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.Nullable;
 
-/** Simplifies usage of java.util.Properties. */
+/** Simplifies building and retrieving values from java.util.Properties. */
 public final class PropertyFileUtils {
 
     /** https://datatracker.ietf.org/doc/html/rfc1340 */
     public static final int MAX_PORT = 0xffff;
 
-    private static final Set<String> AFFERMATIVE_VALUES;
+    /** For parsing booleans */
+    private static final Set<String> TRUTHY_VALUES;
 
     static {
-        AFFERMATIVE_VALUES = Set.of("y", "yes", "t", "true", "on", "1");
+        TRUTHY_VALUES = Set.of("y", "yes", "t", "true", "on", "1");
     }
 
     private PropertyFileUtils() {}
@@ -45,6 +46,11 @@ public final class PropertyFileUtils {
         return properties;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return a path to an existing directory
+     */
     public static Path getExistingDirPath(Properties properties, String key) {
         final var raw = getRequiredString(properties, key);
 
@@ -63,6 +69,11 @@ public final class PropertyFileUtils {
         return path;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return a path to an existing file
+     */
     public static Path getExistingFilePath(Properties properties, String key) {
         final var raw = getRequiredString(properties, key);
 
@@ -81,6 +92,12 @@ public final class PropertyFileUtils {
         return path;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return value leniently interpreted as a boolean
+     */
     public static boolean getOptionalBoolean(
             Properties properties, String key, boolean defaultValue) {
 
@@ -92,9 +109,15 @@ public final class PropertyFileUtils {
             return defaultValue;
         }
 
-        return AFFERMATIVE_VALUES.contains(value);
+        return TRUTHY_VALUES.contains(value);
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return an int or the default (never null)
+     */
     public static int getOptionalInt(Properties properties, String key, int defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
@@ -108,6 +131,12 @@ public final class PropertyFileUtils {
         return Integer.parseInt(value);
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return a long or the default (never null)
+     */
     public static long getOptionalLong(Properties properties, String key, long defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
@@ -121,6 +150,12 @@ public final class PropertyFileUtils {
         return Long.parseLong(value);
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return a pattern or the default (never null)
+     */
     public static Pattern getOptionalRegexPattern(
             Properties properties, String key, Pattern defaultValue) {
         requireNonNull(defaultValue, "defaultValue is required and null.");
@@ -138,6 +173,13 @@ public final class PropertyFileUtils {
         }
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return a string or the (nullable) default
+     */
+    @Nullable
     public static String getOptionalString(
             Properties properties, String key, @Nullable String defaultValue) {
         requireNonNull(properties, "properties is required and null.");
@@ -151,6 +193,12 @@ public final class PropertyFileUtils {
         return value;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return a URI or the (nullable) default
+     */
     @Nullable
     public static URI getOptionalURI(
             Properties properties, String key, @Nullable String defaultValue) {
@@ -169,6 +217,12 @@ public final class PropertyFileUtils {
         return URI.create(defaultValue);
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return a URI or the default, (never null)
+     */
     public static URI getOptionalURI(Properties properties, String key, URI defaultValue) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(defaultValue, "defaultValue is required and null.");
@@ -226,6 +280,11 @@ public final class PropertyFileUtils {
         return path;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return the int (never null)
+     */
     public static int getRequiredInt(Properties properties, String key) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(properties, "properties is required and null.");
@@ -238,6 +297,11 @@ public final class PropertyFileUtils {
         return Integer.parseInt(value);
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return a long, (never null)
+     */
     public static long getRequiredLong(Properties properties, String key) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(properties, "properties is required and null.");
@@ -269,6 +333,13 @@ public final class PropertyFileUtils {
         return Paths.get(value).toAbsolutePath().normalize();
     }
 
+    /**
+     * See https://datatracker.ietf.org/doc/html/rfc1340
+     *
+     * @param properties
+     * @param key
+     * @return a valid IP port
+     */
     public static int getRequiredPort(Properties properties, String key) {
         final var value = getRequiredInt(properties, key);
         if (value < 0) {
@@ -284,6 +355,11 @@ public final class PropertyFileUtils {
         return value;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return a compiled Pattern (never null)
+     */
     public static Pattern getRequiredRegexPattern(Properties properties, String key) {
         final var raw = getRequiredString(properties, key);
 
@@ -312,6 +388,11 @@ public final class PropertyFileUtils {
         return value;
     }
 
+    /**
+     * @param properties
+     * @param key
+     * @return a URI (never null)
+     */
     public static URI getRequiredURI(Properties properties, String key) {
         requireNonNull(properties, "properties is required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
