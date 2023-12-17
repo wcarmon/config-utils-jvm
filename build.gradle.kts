@@ -69,7 +69,6 @@ publishing {
                         name = "MIT License"
                         url =
                             "https://raw.githubusercontent.com/wcarmon/property-utils-jvm/main/LICENSE"
-                        // http://www.opensource.org/licenses/mit-license.php
                     }
                 }
 
@@ -85,7 +84,6 @@ publishing {
                 scm {
                     connection =
                         "scm:git:git@github.com:wcarmon/property-utils-jvm.git"
-                    //  "scm:git:git://github.com/wcarmon/property-utils-jvm.git"
                     developerConnection =
                         "scm:git:ssh://github.com:wcarmon/property-utils-jvm.git"
                     url = "https://github.com/wcarmon/property-utils-jvm/tree/main"
