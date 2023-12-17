@@ -98,8 +98,6 @@ publishing {
         maven {
 
             // -- See ~/.gradle/gradle.properties
-            name = "ossrh" // prefix for property names
-//            credentials(PasswordCredentials::class)
             credentials {
                 username = ossrhUsername
                 password = ossrhPassword
@@ -113,10 +111,6 @@ publishing {
 
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl
             else releasesRepoUrl // TODO: fix
-
-//            metadataSources {
-//                gradleMetadata()
-//            }
         }
     }
 }
