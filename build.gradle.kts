@@ -104,7 +104,6 @@ publishing {
             }
 
             val releasesRepoUrl =
-                // TODO: fix
                 uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
 
             val snapshotsRepoUrl = uri(layout.buildDirectory.dir("repos/snapshots")) // TODO: fix
@@ -141,5 +140,3 @@ configure<SpotlessExtension> {
         )
     }
 }
-
-
