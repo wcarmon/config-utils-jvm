@@ -2,7 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 
 val mvnGroupId = "io.github.wcarmon"
 val mvnArtifactId = "property-utils-jvm" // see settings.gradle.kts
-val mvnVersion = "1.0.0"
+val mvnVersion = "1.0.1"
 
 val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
 val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
@@ -60,7 +60,7 @@ publishing {
             }
 
             pom {
-                name = "property-utils-jvm"
+                name = mvnArtifactId
                 description = "Utilities for using Property instances"
                 url = "https://github.com/wcarmon/property-utils-jvm"
 
