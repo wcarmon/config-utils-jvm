@@ -4,6 +4,7 @@ import static io.github.wcarmon.config.ConfigUtils.getOptionalBoolean;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -13,6 +14,43 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
+
+    @Test
+    void testGetOptionalBoolean() {
+        final var k = "b";
+
+        assertFalse(getOptionalBoolean(Map.of(), k, false));
+        assertFalse(getOptionalBoolean(Map.of(k, false), k, false));
+        assertFalse(getOptionalBoolean(Map.of(k, false), k, true));
+
+        assertTrue(getOptionalBoolean(Map.of(), k, true));
+        assertTrue(getOptionalBoolean(Map.of(k, true), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, true), k, true));
+
+        // -- non-primitive
+        assertFalse(getOptionalBoolean(Map.of(k, Boolean.FALSE), k, false));
+        assertFalse(getOptionalBoolean(Map.of(k, Boolean.FALSE), k, true));
+        assertTrue(getOptionalBoolean(Map.of(k, Boolean.TRUE), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, Boolean.TRUE), k, true));
+
+        // -- Number
+        assertTrue(getOptionalBoolean(Map.of(k, 1), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, 1L), k, false));
+
+        // -- Strings
+        assertTrue(getOptionalBoolean(Map.of(k, "1"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "on"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "true"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "tRue"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "TRUE"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "True"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "yes"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "YES"), k, false));
+        assertTrue(getOptionalBoolean(Map.of(k, "yEs"), k, false));
+
+        // -- null default
+        assertNull(getOptionalBoolean(Map.of(), k, null));
+    }
 
     @Test
     void testGetOptionalInt() {
@@ -78,35 +116,8 @@ class ConfigUtilsTest {
         } catch (IllegalArgumentException ex) {
             // -- expected
         }
-    }
 
-    @Test
-    void testGetOptionalBoolean() {
-        final var k = "b";
-
-        assertFalse(getOptionalBoolean(Map.of(), k, false));
-        assertFalse(getOptionalBoolean(Map.of(k, false), k, false));
-        assertFalse(getOptionalBoolean(Map.of(k, false), k, true));
-
-        assertTrue(getOptionalBoolean(Map.of(), k, true));
-        assertTrue(getOptionalBoolean(Map.of(k, true), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, true), k, true));
-
-        // -- non-primitive
-        assertFalse(getOptionalBoolean(Map.of(k, Boolean.FALSE), k, false));
-        assertFalse(getOptionalBoolean(Map.of(k, Boolean.FALSE), k, true));
-        assertTrue(getOptionalBoolean(Map.of(k, Boolean.TRUE), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, Boolean.TRUE), k, true));
-
-        // -- Strings
-        assertTrue(getOptionalBoolean(Map.of(k, "1"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "on"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "true"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "tRue"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "TRUE"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "True"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "yes"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "YES"), k, false));
-        assertTrue(getOptionalBoolean(Map.of(k, "yEs"), k, false));
+        // -- null default
+        assertNull(getOptionalInt(Map.of(), k, null));
     }
 }

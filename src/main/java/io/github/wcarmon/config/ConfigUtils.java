@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -99,6 +100,17 @@ public final class ConfigUtils {
         return path;
     }
 
+    @Nullable
+    public static Boolean consumeOptionalBoolean(
+            Map<String, Object> m,
+            String key,
+            @Nullable Boolean defaultValue) {
+
+        final var out = getOptionalBoolean(m, key, defaultValue);
+        m.remove(key);
+        return out;
+    }
+
     /**
      * @param properties instance to read
      * @param key        property name
@@ -122,14 +134,26 @@ public final class ConfigUtils {
         return path;
     }
 
+    @Nullable
+    public static Integer consumeOptionalInt(
+            Map<String, Object> m,
+            String key,
+            @Nullable Integer defaultValue) {
+
+        final var out = getOptionalInt(m, key, defaultValue);
+        m.remove(key);
+        return out;
+    }
+
     /**
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue
-     * @return value leniently interpreted as a boolean
+     * @return value leniently interpreted as a boolean or null if unset and default is null
      */
-    public static boolean getOptionalBoolean(
-            Map<String, Object> properties, String key, boolean defaultValue) {
+    @Nullable
+    public static Boolean getOptionalBoolean(
+            Map<String, Object> properties, String key, @Nullable Boolean defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
@@ -139,23 +163,38 @@ public final class ConfigUtils {
             return defaultValue;
         }
 
-        throw new RuntimeException("TODO: implement me");
+        if (value instanceof Boolean) {
+            return (boolean) value;
+        }
 
-//        final var value = properties.get(key, "").strip().toLowerCase(Locale.getDefault());
-//        if (value.isBlank()) {
-//            return defaultValue;
-//        }
-//
-//        return TRUTHY_VALUES.contains(value);
+        if (value instanceof Number) {
+            return ((Number) value).intValue() == 1;
+        }
+
+        if (value instanceof CharSequence) {
+            final var s = value.toString().strip().toLowerCase(Locale.getDefault());
+
+            if (s.isBlank()) {
+                return defaultValue;
+            }
+
+            return TRUTHY_VALUES.contains(s);
+        }
+
+        throw new RuntimeException("Failed to coerce type to boolean: " + value.getClass().getName());
     }
 
     /**
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue
-     * @return an int or the default (never null)
+     * @return an int or the default (which may be null)
      */
-    public static int getOptionalInt(Map<String, Object> properties, String key, int defaultValue) {
+    @Nullable
+    public static Integer getOptionalInt(
+            Map<String, Object> properties,
+            String key,
+            @Nullable Integer defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
@@ -172,7 +211,8 @@ public final class ConfigUtils {
         if (value instanceof Long) {
             final var l = (long) value;
             if (l > Integer.MAX_VALUE || l < Integer.MIN_VALUE) {
-                throw new IllegalArgumentException("value overflow for key=" + key + ", value=" + value);
+                throw new IllegalArgumentException("value overflow for key="
+                        + key + ", value=" + value);
             }
 
             return (int) l;
@@ -191,31 +231,6 @@ public final class ConfigUtils {
         }
 
         throw new RuntimeException("Failed to coerce type to int: " + value.getClass().getName());
-    }
-
-    /**
-     * @param properties   instance to read
-     * @param key          property name
-     * @param defaultValue
-     * @return a long or the default (never null)
-     */
-    public static long getOptionalLong(Map<String, Object> properties, String key, long defaultValue) {
-
-        requireNonNull(properties, "properties are required and null.");
-        checkArgument(key != null && !key.isBlank(), "key is required");
-
-        final var value = properties.get(key);
-        if (value == null) {
-            return defaultValue;
-        }
-
-        throw new RuntimeException("TODO: implement me");
-//        final var value = properties.getProperty(key, "").strip();
-//        if (value.isBlank()) {
-//            return defaultValue;
-//        }
-//
-//        return Long.parseLong(value);
     }
 
     /**
@@ -245,6 +260,47 @@ public final class ConfigUtils {
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue
+     * @return a long or the default (which may be null)
+     */
+    @Nullable
+    public static Long getOptionalLong(Map<String, Object> properties,
+                                       String key,
+                                       @Nullable Long defaultValue) {
+
+        requireNonNull(properties, "properties are required and null.");
+        checkArgument(key != null && !key.isBlank(), "key is required");
+
+        final var value = properties.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+
+        if (value instanceof Long
+                || value instanceof Integer
+                || value instanceof Short
+                || value instanceof Byte) {
+            return ((Number) value).longValue();
+        }
+
+        // TODO: BigInteger
+
+        if (value instanceof CharSequence) {
+            final var s = value.toString().strip();
+
+            if (s.isBlank()) {
+                return defaultValue;
+            }
+
+            return Long.parseLong(s);
+        }
+
+        throw new RuntimeException("Failed to coerce type to long: " + value.getClass().getName());
+    }
+
+    /**
+     * @param properties   instance to read
+     * @param key          property name
+     * @param defaultValue
      * @return a string or the (nullable) default
      */
     @Nullable
@@ -258,13 +314,16 @@ public final class ConfigUtils {
             return defaultValue;
         }
 
-        throw new RuntimeException("TODO: implement me");
-//        final var value = properties.getProperty(key, "").strip();
-//        if (value.isBlank()) {
-//            return defaultValue;
-//        }
-//
-//        return value;
+        if (value instanceof CharSequence) {
+            final var s = value.toString().strip();
+            if (s.isBlank()) {
+                return defaultValue;
+            }
+
+            return s;
+        }
+
+        return value.toString();
     }
 
     /**
