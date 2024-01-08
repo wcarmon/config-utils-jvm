@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -61,45 +60,28 @@ class ConfigUtilsTest {
         tmp.put(k, null);
 
         // -- null check
-        assertEquals(
-                1,
-                getOptionalInt(tmp, k, 1));
+        assertEquals(1, getOptionalInt(tmp, k, 1));
 
         // -- missing k check
-        assertEquals(
-                2,
-                getOptionalInt(Map.of(), k, 2));
+        assertEquals(2, getOptionalInt(Map.of(), k, 2));
 
         // -- primitive
-        assertEquals(
-                3,
-                getOptionalInt(Map.of(k, 3), k, -1));
+        assertEquals(3, getOptionalInt(Map.of(k, 3), k, -1));
 
         // -- non-primitive
-        assertEquals(
-                4,
-                getOptionalInt(Map.of(k, Integer.valueOf(4)), k, -1));
+        assertEquals(4, getOptionalInt(Map.of(k, Integer.valueOf(4)), k, -1));
 
         // -- narrower type (primitive)
-        assertEquals(
-                5,
-                getOptionalInt(Map.of(k, (short) 5), k, -1));
+        assertEquals(5, getOptionalInt(Map.of(k, (short) 5), k, -1));
 
         // -- narrower type (non-primitive)
-        assertEquals(
-                6,
-                getOptionalInt(Map.of(k, Short.valueOf((short) 6)), k, -1));
+        assertEquals(6, getOptionalInt(Map.of(k, Short.valueOf((short) 6)), k, -1));
 
         // -- wider type, but still fits (primitive)
-        assertEquals(
-                7,
-                getOptionalInt(Map.of(k, 7L), k, -1));
+        assertEquals(7, getOptionalInt(Map.of(k, 7L), k, -1));
 
         // -- wider type, but still fits (non-primitive)
-        assertEquals(
-                8,
-                getOptionalInt(Map.of(k, Long.valueOf(8)), k, -1));
-
+        assertEquals(8, getOptionalInt(Map.of(k, Long.valueOf(8)), k, -1));
 
         // -- wider type, too big
         try {
