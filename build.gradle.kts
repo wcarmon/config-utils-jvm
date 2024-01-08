@@ -91,25 +91,25 @@ publishing {
             }
         }
 
-
-        create<MavenPublication>("relocation") {
-            pom {
-                // -- Old artifact coordinates
-                groupId = mvnGroupId
-                artifactId = "property-utils-jvm"
-                version = "1.0.0"
-
-                distributionManagement {
-                    relocation {
-                        // New artifact coordinates
-                        groupId = mvnGroupId
-                        artifactId = "config-utils-jvm"
-                        version = "1.0.1"
-                        message = "artifactId has changed"
-                    }
-                }
-            }
-        }
+// TODO: fix relocation
+//        create<MavenPublication>("relocation") {
+//            pom {
+//                // -- Old artifact coordinates
+//                groupId = mvnGroupId
+//                artifactId = "property-utils-jvm"
+//                version = "1.0.0"
+//
+//                distributionManagement {
+//                    relocation {
+//                        // New artifact coordinates
+//                        groupId = mvnGroupId
+//                        artifactId = "config-utils-jvm"
+//                        version = "1.0.1"
+//                        message = "artifactId has changed"
+//                    }
+//                }
+//            }
+//        }
     }
 
     repositories {
