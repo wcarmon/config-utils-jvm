@@ -1,8 +1,8 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 val mvnGroupId = "io.github.wcarmon"
-val mvnArtifactId = "property-utils-jvm" // see settings.gradle.kts
-val mvnVersion = "1.0.1"
+val mvnArtifactId = "config-utils-jvm" // see settings.gradle.kts
+val mvnVersion = "1.0.2"
 
 val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
 val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
@@ -62,13 +62,13 @@ publishing {
             pom {
                 name = mvnArtifactId
                 description = "Utilities for using Property instances"
-                url = "https://github.com/wcarmon/property-utils-jvm"
+                url = "https://github.com/wcarmon/config-utils-jvm"
 
                 licenses {
                     license {
                         name = "MIT License"
                         url =
-                            "https://raw.githubusercontent.com/wcarmon/property-utils-jvm/main/LICENSE"
+                            "https://raw.githubusercontent.com/wcarmon/config-utils-jvm/main/LICENSE"
                     }
                 }
 
@@ -83,10 +83,30 @@ publishing {
 
                 scm {
                     connection =
-                        "scm:git:git@github.com:wcarmon/property-utils-jvm.git"
+                        "scm:git:git@github.com:wcarmon/config-utils-jvm.git"
                     developerConnection =
-                        "scm:git:ssh://github.com:wcarmon/property-utils-jvm.git"
-                    url = "https://github.com/wcarmon/property-utils-jvm/tree/main"
+                        "scm:git:ssh://github.com:wcarmon/config-utils-jvm.git"
+                    url = "https://github.com/wcarmon/config-utils-jvm/tree/main"
+                }
+            }
+        }
+
+
+        create<MavenPublication>("relocation") {
+            pom {
+                // -- Old artifact coordinates
+                groupId = mvnGroupId
+                artifactId = "property-utils-jvm"
+                version = "1.0.0"
+
+                distributionManagement {
+                    relocation {
+                        // New artifact coordinates
+                        groupId = mvnGroupId
+                        artifactId = "config-utils-jvm"
+                        version = "1.0.1"
+                        message = "artifactId has changed"
+                    }
                 }
             }
         }

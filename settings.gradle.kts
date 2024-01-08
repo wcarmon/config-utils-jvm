@@ -1,1 +1,1 @@
-rootProject.name = "property-utils-jvm"
+rootProject.name = "config-utils-jvm"
