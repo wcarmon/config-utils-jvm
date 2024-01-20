@@ -1,6 +1,9 @@
 package io.github.wcarmon.config;
 
 import static io.github.wcarmon.config.ConfigUtils.consumeOptionalInt;
+import static io.github.wcarmon.config.ConfigUtils.getDelimitedDoubles;
+import static io.github.wcarmon.config.ConfigUtils.getDelimitedInts;
+import static io.github.wcarmon.config.ConfigUtils.getDelimitedStrings;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalBoolean;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -23,10 +27,207 @@ class ConfigUtilsTest {
         Map<String, ?> m2 = new HashMap<>();
         Map<String, ? extends CharSequence> m3 = new HashMap<>();
 
-        consumeOptionalInt(m0, "", 0);
-        consumeOptionalInt(m1, "", 0);
-        consumeOptionalInt(m2, "", 0);
-        consumeOptionalInt(m3, "", 0);
+        consumeOptionalInt(m0, "a", 0);
+        consumeOptionalInt(m1, "a", 0);
+        consumeOptionalInt(m2, "a", 0);
+        consumeOptionalInt(m3, "a", 0);
+    }
+
+    @Test
+    void testGetDelimitedDoubles() {
+        final var k = "a";
+
+        assertEquals(
+                List.of(),
+                getDelimitedDoubles(Map.of(k, ""), k, ","));
+
+        assertEquals(
+                List.of(),
+                getDelimitedDoubles(Map.of(k, ",,,"), k, ","));
+
+        assertEquals(
+                List.of(1.1),
+                getDelimitedDoubles(Map.of(k, "1.1"), k, ","));
+
+        assertEquals(
+                List.of(1.1, 2.2),
+                getDelimitedDoubles(Map.of(k, "1.1, 2.2"), k, ","));
+
+        assertEquals(
+                List.of(1.1, 2.2),
+                getDelimitedDoubles(Map.of(k, ",,1.1, ,,  2.2,"), k, ","));
+
+        assertEquals(
+                List.of(1.1, 2.2),
+                getDelimitedDoubles(Map.of(k, ";1.1; 2.2;;"), k, ";"));
+
+        // TODO: test other double representations, like exp syntax
+
+        try {
+            getDelimitedDoubles(Map.of(k, "1.1"), k, ".");
+            fail("must fail");
+        } catch (IllegalArgumentException expected) {
+            // expected
+        }
+
+        try {
+            getDelimitedDoubles(Map.of(k, "a,b"), k, ",");
+            fail("must fail");
+        } catch (IllegalArgumentException expected) {
+            // expected
+        }
+    }
+
+
+    @Test
+    void testGetDelimitedInts() {
+        final var k = "a";
+
+        assertEquals(
+                List.of(),
+                getDelimitedInts(Map.of(k, ""), k, ","));
+
+        assertEquals(
+                List.of(),
+                getDelimitedInts(Map.of(k, ",,,"), k, ","));
+
+        assertEquals(
+                List.of(1, 2, 3),
+                getDelimitedInts(Map.of(k, "1,2, 3"), k, ","));
+
+        assertEquals(
+                List.of(1, 2, 3),
+                getDelimitedInts(Map.of(k, ",,1, ,,  2, 3,"), k, ","));
+
+        assertEquals(
+                List.of(1, 2, 3),
+                getDelimitedInts(Map.of(k, ";1; 2; 3;"), k, ";"));
+
+        try {
+            getDelimitedInts(Map.of(k, ";1; 2; 3;"), k, ",");
+            fail("must fail");
+        } catch (IllegalArgumentException expected) {
+            // expected
+        }
+    }
+
+    @Test
+    void testGetDelimitedStrings_empty() {
+        final var k = "a";
+
+        assertEquals(
+                List.of(),
+                getDelimitedStrings(
+                        Map.of(k, ""),
+                        k,
+                        ",",
+                        false));
+
+        assertEquals(
+                List.of(),
+                getDelimitedStrings(
+                        Map.of(k, ""),
+                        k,
+                        ",",
+                        true));
+
+        assertEquals(
+                List.of(),
+                getDelimitedStrings(
+                        Map.of(k, ""),
+                        k,
+                        ";",
+                        true));
+
+        assertEquals(
+                List.of(),
+                getDelimitedStrings(
+                        Map.of(k, ",,,"),
+                        k,
+                        ",",
+                        true));
+    }
+
+    @Test
+    void testGetDelimitedStrings_multi() {
+        final var k = "a";
+
+        assertEquals(
+                List.of("foo", "bar", "quux"),
+                getDelimitedStrings(
+                        Map.of(k, "foo,bar, quux"),
+                        k,
+                        ",",
+                        false));
+
+        assertEquals(
+                List.of("", "foo", "bar"),
+                getDelimitedStrings(
+                        Map.of(k, ",foo, bar"),
+                        k,
+                        ",",
+                        false));
+
+        assertEquals(
+                List.of("foo", "quux"), // trailing empty strings ignored
+                getDelimitedStrings(
+                        Map.of(k, "foo, quux,"),
+                        k,
+                        ",",
+                        false));
+
+        assertEquals(
+                List.of("foo", "bar", "quux"),
+                getDelimitedStrings(
+                        Map.of(k, "foo,  bar,,quux,"),
+                        k,
+                        ",",
+                        true));
+    }
+
+    @Test
+    void testGetDelimitedStrings_single() {
+        final var k = "a";
+
+        assertEquals(
+                List.of("foo"),
+                getDelimitedStrings(
+                        Map.of(k, "foo"),
+                        k,
+                        ",",
+                        false));
+
+        assertEquals(
+                List.of("foo"),
+                getDelimitedStrings(
+                        Map.of(k, "foo"),
+                        k,
+                        ",",
+                        true));
+
+        assertEquals(
+                List.of("foo"),
+                getDelimitedStrings(
+                        Map.of(k, ";;;foo;;"),
+                        k,
+                        ";",
+                        true));
+
+        assertEquals(
+                List.of("foo"),
+                getDelimitedStrings(
+                        Map.of(k, "foo;"),
+                        k,
+                        ";",
+                        true));
+
+        assertEquals(
+                List.of("foo"),
+                getDelimitedStrings(
+                        Map.of(k, ",foo,"),
+                        k,
+                        ",",
+                        true));
     }
 
     @Test
