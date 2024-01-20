@@ -257,12 +257,11 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes a required int value from a Map with the given key.
      *
-     * @param properties   instance to read & modify
-     * @param key          property name
-     * @param defaultValue used when value is absent
+     * @param properties instance to read & modify
+     * @param key        property name*
      * @return an int
      */
-    public static int consumeRequiredInt(Map<String, ?> properties, String key, int defaultValue) {
+    public static int consumeRequiredInt(Map<String, ?> properties, String key) {
         final var out = getRequiredInt(properties, key);
         properties.remove(key);
         return out;
@@ -271,14 +270,27 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes a required long value from a Map with the given key.
      *
-     * @param properties   instance to read & modify
-     * @param key          property name
-     * @param defaultValue used when value is absent
+     * @param properties instance to read & modify
+     * @param key        property name*
      * @return a long or throw when absent
      */
-    public static long consumeRequiredLong(
-            Map<String, ?> properties, String key, long defaultValue) {
+    public static long consumeRequiredLong(Map<String, ?> properties, String key) {
         final var out = getRequiredLong(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes a required path value from a Map with the given key.
+     * <p>
+     * Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
+     *
+     * @param properties instance to read & modify
+     * @param key        property name
+     * @return a path (which may or may not exist in a file system), never null
+     */
+    public static Path consumeRequiredPath(Map<String, ?> properties, String key) {
+        final var out = getRequiredPath(properties, key);
         properties.remove(key);
         return out;
     }
@@ -1080,28 +1092,22 @@ public final class ConfigUtils {
         }
     }
 
-
     // TODO: getDelimitedBooleans
     // TODO: getDelimitedBytes
     // TODO: getDelimitedFloats
-    // TODO: getDelimitedInts
-    // TODO: getDelimitedLongs
     // TODO: getDelimitedPorts
 
     // TODO: consumeDelimitedBooleans
     // TODO: consumeDelimitedBytes
     // TODO: consumeDelimitedFloats
-    // TODO: consumeDelimitedLongs
     // TODO: consumeDelimitedPorts
-    // TODO: consumeDelimitedStrings
 
-    //    public static X consumeOptionalRegexPattern(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredDirPath(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredFilePath(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredPath(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredRegexPattern(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredURI(Map<String, ?> properties, String key, Y y){}
-    //    public static X consumeRequiredUUID(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeOptionalRegexPattern(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeRequiredDirPath(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeRequiredFilePath(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeRequiredRegexPattern(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeRequiredURI(Map<String, ?> properties, String key, Y y){}
+    // TODO:   public static X consumeRequiredUUID(Map<String, ?> properties, String key, Y y){}
 }
