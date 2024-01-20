@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -34,10 +35,11 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {}
+    private ConfigUtils() {
+    }
 
     /**
-     * Consumes/Removes a optional boolean value from a Map with the given key.
+     * Consumes/Removes an optional boolean value from a Map with the given key.
      *
      * @param properties
      * @param key
@@ -54,7 +56,7 @@ public final class ConfigUtils {
     }
 
     /**
-     * Consumes/Removes a optional int value from a Map with the given key.
+     * Consumes/Removes an optional int value from a Map with the given key.
      *
      * @param properties
      * @param key
@@ -71,7 +73,7 @@ public final class ConfigUtils {
     }
 
     /**
-     * Consumes/Removes a optional long value from a Map with the given key.
+     * Consumes/Removes an optional long value from a Map with the given key.
      *
      * @param properties
      * @param key
@@ -88,7 +90,25 @@ public final class ConfigUtils {
     }
 
     /**
-     * Consumes/Removes a optional string value from a Map with the given key.
+     * Consumes/Removes an optional port value from a Map with the given key.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc1340
+     *
+     * @param properties   instance to read
+     * @param key          property name
+     * @param defaultValue default port
+     * @return a valid IP port
+     */
+    public static int consumeOptionalPort(
+            Map<String, ?> properties, String key, int defaultValue) {
+
+        final var out = getOptionalPort(properties, key, defaultValue);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes an optional string value from a Map with the given key.
      *
      * @param properties
      * @param key
@@ -108,7 +128,7 @@ public final class ConfigUtils {
      * Consumes/Removes a required path to an existing directory from a Map with the given key.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory
      */
     public static Path consumeRequiredExistingDirPath(Map<String, ?> properties, String key) {
@@ -136,7 +156,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a regular file.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file or to a non-existent potential file
      */
     public static Path consumeRequiredFilePath(Map<String, ?> properties, String key) {
@@ -219,8 +239,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return value leniently interpreted as a boolean or null if unset and default is null
      */
@@ -259,8 +279,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return an int or the default (which may be null)
      */
@@ -306,8 +326,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a long or the default (which may be null)
      */
@@ -346,8 +366,37 @@ public final class ConfigUtils {
     }
 
     /**
+     * See https://datatracker.ietf.org/doc/html/rfc1340
+     *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
+     * @return a valid IP port
+     */
+    public static int getOptionalPort(Map<String, ?> properties, String key, int defaultValue) {
+        final var value = getOptionalInt(properties, key, defaultValue);
+
+        if (value < MIN_PORT) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must be at least %d", key, MIN_PORT));
+        }
+
+        if (value > MAX_PORT) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must be at most %d", key, MAX_PORT));
+        }
+
+        // -- This check is redundant only when MIN_PORT >= 0
+        if (value < 0) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must non-negative", key));
+        }
+
+        return value;
+    }
+
+    /**
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a pattern or the default (never null)
      */
@@ -369,8 +418,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a string or the (nullable) default
      */
@@ -398,8 +447,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a URI or the (nullable) default
      */
@@ -434,8 +483,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a URI or the default, (never null)
      */
@@ -469,7 +518,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a directory.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory or to a non-existent potential directory
      */
     public static Path getRequiredDirPath(Map<String, ?> properties, String key) {
@@ -489,7 +538,7 @@ public final class ConfigUtils {
      * Throws when the directory doesn't exist or the path is blank.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory
      */
     public static Path getRequiredExistingDirPath(Map<String, ?> properties, String key) {
@@ -512,7 +561,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file
      */
     public static Path getRequiredExistingFilePath(Map<String, ?> properties, String key) {
@@ -539,7 +588,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a regular file.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file or to a non-existent potential file
      */
     public static Path getRequiredFilePath(Map<String, ?> properties, String key) {
@@ -557,7 +606,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return the int (never null)
      */
     public static int getRequiredInt(Map<String, ?> properties, String key) {
@@ -581,7 +630,7 @@ public final class ConfigUtils {
      * Parse a long from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a long, (never null)
      */
     public static long getRequiredLong(Map<String, ?> properties, String key) {
@@ -605,7 +654,7 @@ public final class ConfigUtils {
      * Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path (which may or may not exist in a file system), never null
      */
     public static Path getRequiredPath(Map<String, ?> properties, String key) {
@@ -635,7 +684,7 @@ public final class ConfigUtils {
      * See https://datatracker.ietf.org/doc/html/rfc1340
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a valid IP port
      */
     public static int getRequiredPort(Map<String, ?> properties, String key) {
@@ -664,7 +713,7 @@ public final class ConfigUtils {
      * Parse a Regex pattern from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a compiled Pattern (never null)
      */
     public static Pattern getRequiredRegexPattern(Map<String, ?> properties, String key) {
@@ -682,7 +731,7 @@ public final class ConfigUtils {
      * Read a string from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return non-blank, non-empty, non-null string
      */
     public static String getRequiredString(Map<String, ?> properties, String key) {
@@ -712,7 +761,7 @@ public final class ConfigUtils {
      * Parse a URI from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a URI (never null)
      */
     public static URI getRequiredURI(Map<String, ?> properties, String key) {
@@ -740,7 +789,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a UUID from the value
      */
     public static UUID getRequiredUUID(Map<String, ?> properties, String key) {
