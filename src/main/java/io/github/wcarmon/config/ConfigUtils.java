@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -24,6 +25,11 @@ public final class ConfigUtils {
     /** https://datatracker.ietf.org/doc/html/rfc1340 */
     public static final int MAX_PORT = 0xffff;
 
+    /**
+     * Meaning the OS should select a port number.
+     */
+    public static final int MIN_PORT = 0;
+
     /** For parsing booleans, lower case */
     private static final Set<String> TRUTHY_VALUES;
 
@@ -31,7 +37,8 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {}
+    private ConfigUtils() {
+    }
 
     /**
      * Consumes/Removes a optional boolean value from a Map with the given key.
@@ -43,7 +50,7 @@ public final class ConfigUtils {
      */
     @Nullable
     public static Boolean consumeOptionalBoolean(
-            Map<String, Object> properties, String key, @Nullable Boolean defaultValue) {
+            Map<String, ?> properties, String key, @Nullable Boolean defaultValue) {
 
         final var out = getOptionalBoolean(properties, key, defaultValue);
         properties.remove(key);
@@ -60,7 +67,7 @@ public final class ConfigUtils {
      */
     @Nullable
     public static Integer consumeOptionalInt(
-            Map<String, Object> properties, String key, @Nullable Integer defaultValue) {
+            Map<String, ?> properties, String key, @Nullable Integer defaultValue) {
 
         final var out = getOptionalInt(properties, key, defaultValue);
         properties.remove(key);
@@ -77,7 +84,7 @@ public final class ConfigUtils {
      */
     @Nullable
     public static Long consumeOptionalLong(
-            Map<String, Object> properties, String key, Long defaultValue) {
+            Map<String, ?> properties, String key, Long defaultValue) {
 
         final var out = getOptionalLong(properties, key, defaultValue);
         properties.remove(key);
@@ -94,9 +101,92 @@ public final class ConfigUtils {
      */
     @Nullable
     public static String consumeOptionalString(
-            Map<String, Object> properties, String key, @Nullable String defaultValue) {
+            Map<String, ?> properties, String key, @Nullable String defaultValue) {
 
         final var out = getOptionalString(properties, key, defaultValue);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes a required path to an existing directory from a Map with the given key.
+     *
+     * @param properties instance to read
+     * @param key        property name
+     * @return a path to an existing directory
+     */
+    public static Path consumeRequiredExistingDirPath(Map<String, ?> properties, String key) {
+        final var out = getRequiredExistingDirPath(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * TODO
+     *
+     * @param properties
+     * @param key
+     * @return TODO
+     */
+    public static Path consumeRequiredExistingFilePath(Map<String, ?> properties, String key) {
+        final var out = getRequiredExistingFilePath(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * TODO
+     * Path must be non-blank, but need not exist.
+     *
+     * <p>If the path exists, it must be a regular file.
+     *
+     * @param properties instance to read
+     * @param key        property name
+     * @return a path to an existing file or to a non-existent potential file
+     */
+    public static Path consumeRequiredFilePath(Map<String, ?> properties, String key) {
+        final var out = getRequiredFilePath(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes a required int value from a Map with the given key.
+     *
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return an int
+     */
+    public static int consumeRequiredInt(Map<String, ?> properties, String key, int defaultValue) {
+        final var out = getRequiredInt(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes a required long value from a Map with the given key.
+     *
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public static long consumeRequiredLong(Map<String, ?> properties, String key, long defaultValue) {
+        final var out = getRequiredLong(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes an int TCP port value from a Map with the given key.
+     *
+     * @param properties
+     * @param key
+     * @return a port [MIN_PORT, MAX_PORT], never null
+     */
+    public static int consumeRequiredPort(Map<String, ?> properties, String key) {
+        final var out = getRequiredPort(properties, key);
         properties.remove(key);
         return out;
     }
@@ -108,7 +198,7 @@ public final class ConfigUtils {
      * @param key
      * @return non-blank, non-empty, non-null string
      */
-    public static String consumeRequiredString(Map<String, Object> properties, String key) {
+    public static String consumeRequiredString(Map<String, ?> properties, String key) {
         final var out = getRequiredString(properties, key);
         properties.remove(key);
         return out;
@@ -133,60 +223,14 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
-     * @return a path to an existing directory
-     */
-    public static Path getExistingDirPath(Map<String, Object> properties, String key) {
-        final var raw = getRequiredString(properties, key);
-
-        final var path = Paths.get(raw).toAbsolutePath().normalize();
-
-        if (!Files.exists(path)) {
-            throw new IllegalArgumentException(
-                    String.format("Directory must exist for property '%s'", key));
-        }
-
-        if (!Files.isDirectory(path)) {
-            throw new IllegalArgumentException(
-                    String.format("property '%s' must be a directory", key));
-        }
-
-        return path;
-    }
-
-    /**
-     * @param properties instance to read
-     * @param key property name
-     * @return a path to an existing file
-     */
-    public static Path getExistingFilePath(Map<String, Object> properties, String key) {
-        final var raw = getRequiredString(properties, key);
-
-        final var path = Paths.get(raw).toAbsolutePath().normalize();
-
-        if (!Files.exists(path)) {
-            throw new IllegalArgumentException(
-                    String.format("File must exist for property '%s'", key));
-        }
-
-        if (Files.isDirectory(path)) {
-            throw new IllegalArgumentException(
-                    String.format("property '%s' must not be a directory", key));
-        }
-
-        return path;
-    }
-
-    /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return value leniently interpreted as a boolean or null if unset and default is null
      */
     @Nullable
     public static Boolean getOptionalBoolean(
-            Map<String, Object> properties, String key, @Nullable Boolean defaultValue) {
+            Map<String, ?> properties, String key, @Nullable Boolean defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
@@ -219,14 +263,14 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return an int or the default (which may be null)
      */
     @Nullable
     public static Integer getOptionalInt(
-            Map<String, Object> properties, String key, @Nullable Integer defaultValue) {
+            Map<String, ?> properties, String key, @Nullable Integer defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
@@ -266,14 +310,14 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a long or the default (which may be null)
      */
     @Nullable
     public static Long getOptionalLong(
-            Map<String, Object> properties, String key, @Nullable Long defaultValue) {
+            Map<String, ?> properties, String key, @Nullable Long defaultValue) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
@@ -306,13 +350,13 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a pattern or the default (never null)
      */
     public static Pattern getOptionalRegexPattern(
-            Map<String, Object> properties, String key, Pattern defaultValue) {
+            Map<String, ?> properties, String key, Pattern defaultValue) {
         requireNonNull(defaultValue, "defaultValue is required and null.");
         final var raw = getRequiredString(properties, key);
 
@@ -329,14 +373,14 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a string or the (nullable) default
      */
     @Nullable
     public static String getOptionalString(
-            Map<String, Object> properties, String key, @Nullable String defaultValue) {
+            Map<String, ?> properties, String key, @Nullable String defaultValue) {
         requireNonNull(properties, "properties is required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
 
@@ -358,14 +402,14 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a URI or the (nullable) default
      */
     @Nullable
     public static URI getOptionalURI(
-            Map<String, Object> properties, String key, @Nullable String defaultValue) {
+            Map<String, ?> properties, String key, @Nullable String defaultValue) {
         requireNonNull(properties, "properties is required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
 
@@ -394,12 +438,12 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue
      * @return a URI or the default, (never null)
      */
-    public static URI getOptionalURI(Map<String, Object> properties, String key, URI defaultValue) {
+    public static URI getOptionalURI(Map<String, ?> properties, String key, URI defaultValue) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(defaultValue, "defaultValue is required and null.");
         requireNonNull(properties, "properties is required and null.");
@@ -429,10 +473,10 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a directory.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory or to a non-existent potential directory
      */
-    public static Path getRequiredDirPath(Map<String, Object> properties, String key) {
+    public static Path getRequiredDirPath(Map<String, ?> properties, String key) {
         final var raw = getRequiredString(properties, key);
 
         final var path = Paths.get(raw).toAbsolutePath().normalize();
@@ -446,15 +490,63 @@ public final class ConfigUtils {
     }
 
     /**
+     * Throws when the directory doesn't exist or the path is blank.
+     *
+     * @param properties instance to read
+     * @param key        property name
+     * @return a path to an existing directory
+     */
+    public static Path getRequiredExistingDirPath(Map<String, ?> properties, String key) {
+        final var raw = getRequiredString(properties, key);
+
+        final var path = Paths.get(raw).toAbsolutePath().normalize();
+
+        if (!Files.exists(path)) {
+            throw new IllegalArgumentException(
+                    String.format("Directory must exist for property '%s'", key));
+        }
+
+        if (!Files.isDirectory(path)) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must be a directory", key));
+        }
+
+        return path;
+    }
+
+    /**
+     * @param properties instance to read
+     * @param key        property name
+     * @return a path to an existing file
+     */
+    public static Path getRequiredExistingFilePath(Map<String, ?> properties, String key) {
+        final var raw = getRequiredString(properties, key);
+
+        final var path = Paths.get(raw).toAbsolutePath().normalize();
+
+        if (!Files.exists(path)) {
+            throw new IllegalArgumentException(
+                    String.format("File must exist for property '%s'", key));
+        }
+
+        if (Files.isDirectory(path)) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must not be a directory", key));
+        }
+
+        return path;
+    }
+
+    /**
      * Path must be non-blank, but need not exist.
      *
      * <p>If the path exists, it must be a regular file.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file or to a non-existent potential file
      */
-    public static Path getRequiredFilePath(Map<String, Object> properties, String key) {
+    public static Path getRequiredFilePath(Map<String, ?> properties, String key) {
         final var raw = getRequiredString(properties, key);
 
         final var path = Paths.get(raw).toAbsolutePath().normalize();
@@ -469,10 +561,10 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return the int (never null)
      */
-    public static int getRequiredInt(Map<String, Object> properties, String key) {
+    public static int getRequiredInt(Map<String, ?> properties, String key) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(properties, "properties is required and null.");
 
@@ -493,10 +585,10 @@ public final class ConfigUtils {
      * Parse a long from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a long, (never null)
      */
-    public static long getRequiredLong(Map<String, Object> properties, String key) {
+    public static long getRequiredLong(Map<String, ?> properties, String key) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(properties, "properties is required and null.");
 
@@ -517,10 +609,10 @@ public final class ConfigUtils {
      * Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path (which may or may not exist in a file system), never null
      */
-    public static Path getRequiredPath(Map<String, Object> properties, String key) {
+    public static Path getRequiredPath(Map<String, ?> properties, String key) {
         requireNonNull(properties, "properties is required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
 
@@ -547,19 +639,26 @@ public final class ConfigUtils {
      * See https://datatracker.ietf.org/doc/html/rfc1340
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a valid IP port
      */
-    public static int getRequiredPort(Map<String, Object> properties, String key) {
+    public static int getRequiredPort(Map<String, ?> properties, String key) {
         final var value = getRequiredInt(properties, key);
-        if (value < 0) {
+
+        if (value < MIN_PORT) {
             throw new IllegalArgumentException(
-                    String.format("property '%s' must non-negative", key));
+                    String.format("property '%s' must be at least %d", key, MIN_PORT));
         }
 
         if (value > MAX_PORT) {
             throw new IllegalArgumentException(
-                    String.format("property '%s' must less than %d", key, MAX_PORT));
+                    String.format("property '%s' must be at most %d", key, MAX_PORT));
+        }
+
+        // -- This check is redundant only when MIN_PORT >= 0
+        if (value < 0) {
+            throw new IllegalArgumentException(
+                    String.format("property '%s' must non-negative", key));
         }
 
         return value;
@@ -569,10 +668,10 @@ public final class ConfigUtils {
      * Parse a Regex pattern from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a compiled Pattern (never null)
      */
-    public static Pattern getRequiredRegexPattern(Map<String, Object> properties, String key) {
+    public static Pattern getRequiredRegexPattern(Map<String, ?> properties, String key) {
         final var raw = getRequiredString(properties, key);
 
         try {
@@ -587,10 +686,10 @@ public final class ConfigUtils {
      * Read a string from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return non-blank, non-empty, non-null string
      */
-    public static String getRequiredString(Map<String, Object> properties, String key) {
+    public static String getRequiredString(Map<String, ?> properties, String key) {
         requireNonNull(properties, "properties are required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
 
@@ -617,10 +716,10 @@ public final class ConfigUtils {
      * Parse a URI from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a URI (never null)
      */
-    public static URI getRequiredURI(Map<String, Object> properties, String key) {
+    public static URI getRequiredURI(Map<String, ?> properties, String key) {
         requireNonNull(properties, "properties is required and null.");
         checkArgument(key != null && !key.isBlank(), "key is required");
 
@@ -645,10 +744,10 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a UUID from the value
      */
-    public static UUID getRequiredUUID(Map<String, Object> properties, String key) {
+    public static UUID getRequiredUUID(Map<String, ?> properties, String key) {
         checkArgument(key != null && !key.isBlank(), "key is required");
         requireNonNull(properties, "properties is required and null.");
 
@@ -656,8 +755,16 @@ public final class ConfigUtils {
         return UUID.fromString(value);
     }
 
-    public static void requireFullyConsumed(Map<String, Object> m, Class<?> targetType) {
-        requireFullyConsumed(m, targetType.getSimpleName());
+    /**
+     * throw IllegalArgumentException if any vaules remain in the map
+     * <p>
+     * presumably all the other values were already consumed
+     *
+     * @param properties
+     * @param targetType
+     */
+    public static void requireFullyConsumed(Map<String, ?> properties, Class<?> targetType) {
+        requireFullyConsumed(properties, targetType.getSimpleName());
     }
 
     /**
@@ -678,7 +785,7 @@ public final class ConfigUtils {
         return out;
     }
 
-    static void requireFullyConsumed(Map<String, Object> m, String targetTypeName) {
+    static void requireFullyConsumed(Map<String, ?> m, String targetTypeName) {
         requireNonNull(m, "m is required and null.");
         checkArgument(
                 targetTypeName != null && !targetTypeName.isBlank(), "targetTypeName is required");
@@ -697,4 +804,32 @@ public final class ConfigUtils {
             throw new IllegalArgumentException(msg);
         }
     }
+
+    // TODO: getDelimitedBooleans
+    // TODO: getDelimitedBytes
+    // TODO: getDelimitedDoubles
+    // TODO: getDelimitedFloats
+    // TODO: getDelimitedInts
+    // TODO: getDelimitedLongs
+    // TODO: getDelimitedPorts
+    // TODO: getDelimitedStrings
+
+    // TODO: consumeDelimitedBooleans
+    // TODO: consumeDelimitedBytes
+    // TODO: consumeDelimitedDoubles
+    // TODO: consumeDelimitedFloats
+    // TODO: consumeDelimitedInts
+    // TODO: consumeDelimitedLongs
+    // TODO: consumeDelimitedPorts
+    // TODO: consumeDelimitedStrings
+
+//    public static X consumeOptionalRegexPattern(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeOptionalURI(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredDirPath(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredFilePath(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredPath(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredRegexPattern(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredURI(Map<String, ?> properties, String key, Y y){}
+//    public static X consumeRequiredUUID(Map<String, ?> properties, String key, Y y){}
 }

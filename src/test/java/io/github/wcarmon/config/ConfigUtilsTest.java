@@ -1,5 +1,6 @@
 package io.github.wcarmon.config;
 
+import static io.github.wcarmon.config.ConfigUtils.consumeOptionalInt;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalBoolean;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,9 +11,23 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
+
+    @Test
+    void methodsMustAcceptAllKindsOfMaps() {
+        Map<String, Object> m0 = new HashMap<>();
+        Map<String, String> m1 = new HashMap<>();
+        Map<String, ?> m2 = new HashMap<>();
+        Map<String, ? extends CharSequence> m3 = new HashMap<>();
+
+        consumeOptionalInt(m0, "", 0);
+        consumeOptionalInt(m1, "", 0);
+        consumeOptionalInt(m2, "", 0);
+        consumeOptionalInt(m3, "", 0);
+    }
 
     @Test
     void testGetOptionalBoolean() {
