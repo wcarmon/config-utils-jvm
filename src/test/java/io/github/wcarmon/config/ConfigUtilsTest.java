@@ -9,10 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -200,6 +203,43 @@ class ConfigUtilsTest {
         assertEquals(List.of("foo"), getDelimitedStrings(Map.of(k, "foo;"), k, ";", true));
 
         assertEquals(List.of("foo"), getDelimitedStrings(Map.of(k, ",foo,"), k, ",", true));
+    }
+
+    @Test
+    void testGetFirstExistingFile_noneExist() throws Exception {
+
+        final var missingFile0 = Paths.get("aaa.txt");
+        final var missingFile1 = Paths.get("bbb.txt");
+
+        assertFalse(Files.exists(missingFile0));
+        assertFalse(Files.exists(missingFile1));
+
+        // -- Act
+        final var got = getFirstExistingFile(List.of(missingFile0, missingFile1));
+
+        // -- Assert
+        assertNull(got);
+    }
+
+    @Test
+    void testGetFirstExistingFile_oneExists() throws Exception {
+
+        final var tmpFile = Files.createTempFile("test.", "");
+
+        final var missingFile0 = Paths.get("aaa.txt");
+        final var missingFile1 = Paths.get("bbb.txt");
+
+        assertFalse(Files.exists(missingFile0));
+        assertFalse(Files.exists(missingFile1));
+        assertTrue(Files.exists(tmpFile));
+
+        // -- Act
+        final var got = getFirstExistingFile(List.of(missingFile0, tmpFile, missingFile1));
+
+        // -- Assert
+        assertNotNull(got);
+        assertEquals(tmpFile, got);
+        Files.delete(tmpFile);
     }
 
     @Test
