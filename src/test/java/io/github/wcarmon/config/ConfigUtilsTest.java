@@ -1,11 +1,6 @@
 package io.github.wcarmon.config;
 
-import static io.github.wcarmon.config.ConfigUtils.consumeOptionalInt;
-import static io.github.wcarmon.config.ConfigUtils.getDelimitedDoubles;
-import static io.github.wcarmon.config.ConfigUtils.getDelimitedInts;
-import static io.github.wcarmon.config.ConfigUtils.getDelimitedStrings;
-import static io.github.wcarmon.config.ConfigUtils.getOptionalBoolean;
-import static io.github.wcarmon.config.ConfigUtils.getOptionalInt;
+import static io.github.wcarmon.config.ConfigUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -33,6 +29,56 @@ class ConfigUtilsTest {
         consumeOptionalInt(m1, "a", 0);
         consumeOptionalInt(m2, "a", 0);
         consumeOptionalInt(m3, "a", 0);
+    }
+
+    @Test
+    void testConsumeDelimitedBytes_tooBig() {
+
+        // -- Arrange
+        final var k = "a";
+
+        // -- Act
+
+        try {
+            consumeDelimitedBytes(Map.of(k, "12, 256"), k, ",");
+            fail("must throw");
+        } catch (NumberFormatException expected) {
+            // expected
+        }
+    }
+
+    @Test
+    void testConsumeDelimitedBytes_tooSmall() {
+
+        // -- Arrange
+        final var k = "a";
+
+        // -- Act
+
+        try {
+            consumeDelimitedBytes(Map.of(k, "16, -1"), k, ",");
+            fail("must throw");
+        } catch (NumberFormatException expected) {
+            // expected
+        }
+    }
+
+    @Test
+    void testGetDelimitedBytes() {
+
+        // -- Arrange
+        final var k = "a";
+
+        // -- Act
+        final var got = getDelimitedBytes(Map.of(k, "133,0, 44,67,255 "), k, ",");
+
+        // -- Assert
+        assertEquals(5, got.length);
+        assertEquals(133, Byte.toUnsignedInt(got[0]));
+        assertEquals(0, Byte.toUnsignedInt(got[1]));
+        assertEquals(44, Byte.toUnsignedInt(got[2]));
+        assertEquals(67, Byte.toUnsignedInt(got[3]));
+        assertEquals(255, Byte.toUnsignedInt(got[4]));
     }
 
     @Test
@@ -130,10 +176,10 @@ class ConfigUtilsTest {
 
         final var propsContent =
                 """
-                a=one, \
-                  two, \
-                  three,
-                """;
+                        a=one, \
+                          two, \
+                          three,
+                        """;
 
         final var properties = new Properties();
         properties.load(new StringReader(propsContent));
@@ -280,11 +326,11 @@ class ConfigUtilsTest {
 
         final var propsContent =
                 """
-                a.b.c=v
-                a.b.c[0]=v
-                b[0]=v
-                z.b[0]=v
-                """;
+                        a.b.c=v
+                        a.b.c[0]=v
+                        b[0]=v
+                        z.b[0]=v
+                        """;
 
         final var properties = new Properties();
         properties.load(new StringReader(propsContent));
@@ -304,12 +350,12 @@ class ConfigUtilsTest {
 
         final var propsContent =
                 """
-                a.b[8]=baz
-                a.b[4]=quux
+                        a.b[8]=baz
+                        a.b[4]=quux
 
-                a.b=y
-                a.b.c=z
-                """;
+                        a.b=y
+                        a.b.c=z
+                        """;
 
         final var properties = new Properties();
         properties.load(new StringReader(propsContent));
@@ -354,13 +400,15 @@ class ConfigUtilsTest {
         assertNotNull(got);
         assertEquals(2, got.size());
 
-        assertEquals("a.b[3].c.d", got.get(0).fullKey());
-        assertEquals("c.d", got.get(0).shortKey());
-        assertEquals("foo", got.get(0).value());
+        final var first = got.get(0);
+        assertEquals("a.b[3].c.d", first.fullKey());
+        assertEquals("c.d", first.shortKey());
+        assertEquals("foo", first.value());
 
-        assertEquals("a.b[15].c.d", got.get(1).fullKey());
-        assertEquals("c.d", got.get(1).shortKey());
-        assertEquals("bar", got.get(1).value());
+        final var second = got.get(1);
+        assertEquals("a.b[15].c.d", second.fullKey());
+        assertEquals("c.d", second.shortKey());
+        assertEquals("bar", second.value());
     }
 
     @Test
@@ -386,8 +434,4 @@ class ConfigUtilsTest {
             // -- expected
         }
     }
-
-    // TODO: negative case: duplicate index
-    // TODO: negative case: index must start at zero
-
 }
