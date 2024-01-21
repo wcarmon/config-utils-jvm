@@ -34,6 +34,33 @@ class ConfigUtilsTest {
     }
 
     @Test
+    void testBuildMutableMapForKeyPrefix() {
+        // -- Arrange
+        final var keyPrefix = "a.b.";
+
+        final var m = Map.of(
+                keyPrefix + "c", "foo",
+                keyPrefix + "c.d", "bar",
+                keyPrefix + "e", "baz",
+                keyPrefix + "f.g", "quux",
+                "hh", "aaa",
+                "yy", "zzz"
+        );
+
+        // -- Act
+        final var got = buildMutableMapForKeyPrefix(m, keyPrefix);
+
+        // -- Assert
+        assertEquals(4, got.size());
+        assertFalse(got.containsKey("hh"));
+        assertFalse(got.containsKey("yy"));
+        assertTrue(got.containsKey(keyPrefix + "c"));
+        assertTrue(got.containsKey(keyPrefix + "c.d"));
+        assertTrue(got.containsKey(keyPrefix + "e"));
+        assertTrue(got.containsKey(keyPrefix + "f.g"));
+    }
+
+    @Test
     void testConsumeDelimitedBytes_tooBig() {
 
         // -- Arrange

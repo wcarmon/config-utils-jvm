@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,6 +50,35 @@ public final class ConfigUtils {
     }
 
     private ConfigUtils() {
+    }
+
+    public static Map<String, Object> buildMutableMapForKeyPrefix(
+            Map<String, ?> properties,
+            String keyPrefix) {
+
+        requireNonNull(properties, "properties is required and null.");
+        if (keyPrefix == null || keyPrefix.isBlank()) {
+            throw new IllegalArgumentException("keyPrefix is required");
+        }
+
+        if (!Objects.equals(keyPrefix, keyPrefix.strip())) {
+            throw new IllegalArgumentException("keyPrefix must be trimmed");
+        }
+
+//        if (keyPrefix.endsWith(".")) {
+//            throw new IllegalArgumentException("keyPrefix must not end with a dot/period");
+//        }
+
+        final var out = new HashMap<String, Object>(properties.size());
+        for (var entry : properties.entrySet()) {
+            if (!entry.getKey().startsWith(keyPrefix)) {
+                continue;
+            }
+
+            out.put(entry.getKey(), entry.getValue());
+        }
+
+        return out;
     }
 
     /**
