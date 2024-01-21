@@ -19,7 +19,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -45,8 +44,7 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {
-    }
+    private ConfigUtils() {}
 
     /**
      * Consumes/Removes a delimited string of doubles from a Map with the given key.
@@ -322,7 +320,7 @@ public final class ConfigUtils {
      * See docs on ConfigUtils.getStringList
      *
      * @param properties instance to read and modify
-     * @param keyPrefix  part before the [0], [1], ... see tests
+     * @param keyPrefix part before the [0], [1], ... see tests
      * @return record with key and value info
      */
     public static List<ListPropertyEntry<?>> consumeStringList(

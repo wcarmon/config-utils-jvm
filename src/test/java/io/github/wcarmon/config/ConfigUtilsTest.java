@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -338,11 +337,11 @@ class ConfigUtilsTest {
 
         final var propsContent =
                 """
-                a.b[15].c.d=bar
-                a.b[3].c.d=foo
+                        a.b[15].c.d=bar
+                        a.b[3].c.d=foo
 
-                e.g.f=7
-                """;
+                        e.g.f=7
+                        """;
 
         final var properties = new Properties();
         properties.load(new StringReader(propsContent));
