@@ -104,6 +104,34 @@ class ConfigUtilsTest {
     }
 
     @Test
+    void testParseProperties() throws Exception {
+
+        // -- Arrange
+        final var tmpFile = Files.createTempFile("test.", "");
+
+        try (final var bw = Files.newBufferedWriter(tmpFile)) {
+            bw.write("""
+                    a.b.c=12
+                    d=3.14
+                    h.j=true
+                    s=tree""");
+        }
+
+        // -- Act
+        final var got = parseProperties(tmpFile);
+        Files.delete(tmpFile);
+
+        // -- Assert
+        assertNotNull(got);
+        assertEquals(4, got.size());
+
+        assertEquals("12", got.get("a.b.c"));
+        assertEquals("3.14", got.get("d"));
+        assertEquals("tree", got.get("s"));
+        assertEquals("true", got.get("h.j"));
+    }
+
+    @Test
     void testGetDelimitedBytes() {
 
         // -- Arrange
