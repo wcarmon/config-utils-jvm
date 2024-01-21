@@ -38,14 +38,25 @@ class ConfigUtilsTest {
         // -- Arrange
         final var keyPrefix = "a.b.";
 
-        final var m = Map.of(
-                keyPrefix + "c", "foo",
-                keyPrefix + "c.d", "bar",
-                keyPrefix + "e", "baz",
-                keyPrefix + "f.g", "quux",
-                "hh", "aaa",
-                "yy", "zzz"
-        );
+        final var m =
+                Map.of(
+                        keyPrefix + "c",
+                        "foo",
+                        // --
+                        keyPrefix + "c.d",
+                        "bar",
+                        // --
+                        keyPrefix + "e",
+                        "baz",
+                        // --
+                        keyPrefix + "f.g",
+                        "quux",
+                        // --
+                        "hh",
+                        "aaa",
+                        // --
+                        "yy",
+                        "zzz");
 
         // -- Act
         final var got = buildMutableMapForKeyPrefix(m, keyPrefix);
