@@ -2,6 +2,7 @@ package io.github.wcarmon.config;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -52,6 +53,13 @@ public final class ConfigUtils {
     private ConfigUtils() {
     }
 
+    /**
+     * Copy all entries from properties with given prefix to a new Map
+     *
+     * @param properties instance to read
+     * @param keyPrefix  eg. "a.b."
+     * @return a new mutable Map with a subset of entries from properties, with given prefix
+     */
     public static Map<String, Object> buildMutableMapForKeyPrefix(
             Map<String, ?> properties,
             String keyPrefix) {
@@ -510,21 +518,12 @@ public final class ConfigUtils {
                 .normalize();
 
         // -- In priority order
-        out.add(cwd.resolve("application.properties"));
-        out.add(cwd.resolve("application.json"));
-        out.add(cwd.resolve("application.yaml"));
-        out.add(Paths.get("src/main/resources/application.properties"));
-        out.add(Paths.get("src/main/resources/application.json"));
-        out.add(Paths.get("src/main/resources/application.yaml"));
-
         // -- See https://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html
-        out.add(Paths.get(System.getProperty("user.dir") + "/application.properties"));
-        out.add(Paths.get(System.getProperty("user.dir") + "/application.json"));
-        out.add(Paths.get(System.getProperty("user.dir") + "/application.yaml"));
 
+        out.add(cwd.resolve("application.properties"));
+        out.add(Paths.get("src/main/resources/application.properties"));
+        out.add(Paths.get(System.getProperty("user.dir") + "/application.properties"));
 //        out.add(Paths.get(System.getProperty("user.home") + "/application.properties"));
-//        out.add(Paths.get(System.getProperty("user.home") + "/application.json"));
-//        out.add(Paths.get(System.getProperty("user.home") + "/application.yaml"));
 
         return out.stream()
                 .map(Path::toAbsolutePath)
@@ -1433,6 +1432,41 @@ public final class ConfigUtils {
         }
 
         return List.copyOf(entriesByIndex.values());
+    }
+
+    /**
+     * Read from typical paths for config files, parse to a Map
+     *
+     * @return a mutable map with the properties
+     */
+    public static Map<String, Object> parseProperties() {
+        final var candidates = getCandidateConfigFiles();
+
+        final var config = getFirstExistingFile(candidates);
+        requireNonNull(config, "failed to find config file: checked: " + candidates);
+
+        return parseProperties(config);
+    }
+
+    /**
+     * @param config existing property file path
+     * @return a mutable map with the properties
+     */
+    public static Map<String, Object> parseProperties(Path config) {
+        requireNonNull(config, "config is required and null.");
+        if (!Files.exists(config)) {
+            throw new IllegalArgumentException("failed to find config file: " + config);
+        }
+
+        final var properties = new Properties();
+        try (final var br = Files.newBufferedReader(config)) {
+            properties.load(br);
+
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to read existing config file: " + config, ex);
+        }
+
+        return toMap(properties);
     }
 
     /**
