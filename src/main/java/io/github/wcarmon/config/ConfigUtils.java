@@ -6,6 +6,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +48,8 @@ public final class ConfigUtils {
      * <p>Splits and parses a string of delimited doubles to a list
      *
      * @param properties instance to read and modify
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Double> consumeDelimitedDoubles(
@@ -68,8 +69,8 @@ public final class ConfigUtils {
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
      * @param properties instance to read and modify
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Integer> consumeDelimitedInts(
@@ -86,8 +87,8 @@ public final class ConfigUtils {
      * <p>Splits and parses a string of delimited longs to a list
      *
      * @param properties instance to read and modify
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Long> consumeDelimitedLongs(
@@ -104,9 +105,9 @@ public final class ConfigUtils {
      * <p>NOTE: trailing empty strings are ignored See
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
-     * @param properties instance to read and modify
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param properties   instance to read and modify
+     * @param key          property name
+     * @param delim        eg. comma or semicolon or pipe
      * @param removeBlanks drop/filter out any blank items
      * @return possibly empty, never null
      */
@@ -121,8 +122,8 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes an optional boolean value from a Map with the given key.
      *
-     * @param properties instance to read and modify
-     * @param key property name
+     * @param properties   instance to read and modify
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return value leniently interpreted as a boolean or null if unset and default is null
      */
@@ -138,8 +139,8 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes an optional int value from a Map with the given key.
      *
-     * @param properties instance to read and modify
-     * @param key property name
+     * @param properties   instance to read and modify
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return an int or the default (which may be null)
      */
@@ -155,8 +156,8 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes an optional long value from a Map with the given key.
      *
-     * @param properties instance to read and modify
-     * @param key property name
+     * @param properties   instance to read and modify
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a long or the default (which may be null)
      */
@@ -174,8 +175,8 @@ public final class ConfigUtils {
      *
      * <p>See https://datatracker.ietf.org/doc/html/rfc1340
      *
-     * @param properties instance to read and modify
-     * @param key property name
+     * @param properties   instance to read and modify
+     * @param key          property name
      * @param defaultValue default port
      * @return a valid IP port
      */
@@ -189,8 +190,8 @@ public final class ConfigUtils {
     /**
      * Consumes/Removes an optional string value from a Map with the given key.
      *
-     * @param properties instance to read and modify
-     * @param key property name
+     * @param properties   instance to read and modify
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a string or the (nullable) default
      */
@@ -207,7 +208,7 @@ public final class ConfigUtils {
      * Consumes/Removes a required path to an existing directory from a Map with the given key.
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory
      */
     public static Path consumeRequiredExistingDirPath(Map<String, ?> properties, String key) {
@@ -220,7 +221,7 @@ public final class ConfigUtils {
      * TODO
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return TODO
      */
     public static Path consumeRequiredExistingFilePath(Map<String, ?> properties, String key) {
@@ -235,7 +236,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a regular file.
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file or to a non-existent potential file
      */
     public static Path consumeRequiredFilePath(Map<String, ?> properties, String key) {
@@ -248,7 +249,7 @@ public final class ConfigUtils {
      * Consumes/Removes a required int value from a Map with the given key.
      *
      * @param properties instance to read and modify
-     * @param key property name*
+     * @param key        property name*
      * @return an int
      */
     public static int consumeRequiredInt(Map<String, ?> properties, String key) {
@@ -261,7 +262,7 @@ public final class ConfigUtils {
      * Consumes/Removes a required long value from a Map with the given key.
      *
      * @param properties instance to read and modify
-     * @param key property name*
+     * @param key        property name*
      * @return a long or throw when absent
      */
     public static long consumeRequiredLong(Map<String, ?> properties, String key) {
@@ -276,7 +277,7 @@ public final class ConfigUtils {
      * <p>Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return a path (which may or may not exist in a file system), never null
      */
     public static Path consumeRequiredPath(Map<String, ?> properties, String key) {
@@ -289,7 +290,7 @@ public final class ConfigUtils {
      * Consumes/Removes an int TCP port value from a Map with the given key.
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return a port [MIN_PORT, MAX_PORT], never null
      */
     public static int consumeRequiredPort(Map<String, ?> properties, String key) {
@@ -302,13 +303,28 @@ public final class ConfigUtils {
      * Consumes/Removes a required string value from a Map with the given key.
      *
      * @param properties instance to read and modify
-     * @param key property name
+     * @param key        property name
      * @return non-blank, non-empty, non-null string
      */
     public static String consumeRequiredString(Map<String, ?> properties, String key) {
         final var out = getRequiredString(properties, key);
         properties.remove(key);
         return out;
+    }
+
+    /**
+     * TODO
+     *
+     * @param properties instance to read and modify
+     * @param keyPrefix  part before the [0], [1], ... see tests
+     * @return TODO
+     */
+    public static List<ListPropertyEntry<?>> consumeStringList(Map<String, ?> properties, String keyPrefix) {
+        final var out = getStringList(properties, keyPrefix);
+
+        throw new RuntimeException("TODO: implement consumeStringList");
+//        properties.remove(key);
+//        return out;
     }
 
     /**
@@ -331,13 +347,14 @@ public final class ConfigUtils {
 
     /**
      * Converts a string of delimited doubles to a list
-     *
-     * <p>NOTE: trailing empty strings are ignored See
+     * <p>
+     * NOTE: trailing empty strings are ignored (supports tailing delimiter).
+     * See
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
      * @param properties instance to read
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Double> getDelimitedDoubles(
@@ -365,13 +382,14 @@ public final class ConfigUtils {
 
     /**
      * Converts a string of delimited ints to a list
-     *
-     * <p>NOTE: trailing empty strings are ignored See
+     * <p>
+     * NOTE: trailing empty strings are ignored (supports tailing delimiter).
+     * See
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
      * @param properties instance to read
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Integer> getDelimitedInts(
@@ -395,13 +413,14 @@ public final class ConfigUtils {
 
     /**
      * Converts a string of delimited longs to a list
-     *
-     * <p>NOTE: trailing empty strings are ignored See
+     * <p>
+     * NOTE: trailing empty strings are ignored (supports tailing delimiter).
+     * See
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
      * @param properties instance to read
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param key        property name
+     * @param delim      eg. comma or semicolon or pipe
      * @return possibly empty, never null, and zero null items in the output list
      */
     public static List<Long> getDelimitedLongs(
@@ -425,13 +444,14 @@ public final class ConfigUtils {
 
     /**
      * Converts delimited strings to a list
-     *
-     * <p>NOTE: trailing empty strings are ignored See
+     * <p>
+     * NOTE: trailing empty strings are ignored (supports tailing delimiter).
+     * See
      * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#split(java.lang.String)
      *
-     * @param properties instance to read
-     * @param key property name
-     * @param delim eg. comma or semicolon
+     * @param properties   instance to read
+     * @param key          property name
+     * @param delim        eg. comma or semicolon or pipe
      * @param removeBlanks drop/filter out any blank items
      * @return possibly empty, never null
      */
@@ -457,8 +477,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return value leniently interpreted as a boolean or null if unset and default is null
      */
@@ -497,8 +517,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return an int or the default (which may be null)
      */
@@ -544,8 +564,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a long or the default (which may be null)
      */
@@ -587,7 +607,7 @@ public final class ConfigUtils {
      * See https://datatracker.ietf.org/doc/html/rfc1340
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a valid IP port
      */
     public static int getOptionalPort(Map<String, ?> properties, String key, int defaultValue) {
@@ -616,8 +636,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a pattern or the default (never null)
      */
@@ -639,8 +659,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a string or the (nullable) default
      */
@@ -668,8 +688,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a URI or the (nullable) default
      */
@@ -704,8 +724,8 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties instance to read
-     * @param key property name
+     * @param properties   instance to read
+     * @param key          property name
      * @param defaultValue used when value is absent
      * @return a URI or the default, (never null)
      */
@@ -739,7 +759,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a directory.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory or to a non-existent potential directory
      */
     public static Path getRequiredDirPath(Map<String, ?> properties, String key) {
@@ -759,7 +779,7 @@ public final class ConfigUtils {
      * Throws when the directory doesn't exist or the path is blank.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing directory
      */
     public static Path getRequiredExistingDirPath(Map<String, ?> properties, String key) {
@@ -782,7 +802,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file
      */
     public static Path getRequiredExistingFilePath(Map<String, ?> properties, String key) {
@@ -809,7 +829,7 @@ public final class ConfigUtils {
      * <p>If the path exists, it must be a regular file.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path to an existing file or to a non-existent potential file
      */
     public static Path getRequiredFilePath(Map<String, ?> properties, String key) {
@@ -827,7 +847,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return the int (never null)
      */
     public static int getRequiredInt(Map<String, ?> properties, String key) {
@@ -851,7 +871,7 @@ public final class ConfigUtils {
      * Parse a long from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a long, (never null)
      */
     public static long getRequiredLong(Map<String, ?> properties, String key) {
@@ -875,7 +895,7 @@ public final class ConfigUtils {
      * Parse a java.nio.file.Path from the value. Path must be non-blank, but need not exist.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a path (which may or may not exist in a file system), never null
      */
     public static Path getRequiredPath(Map<String, ?> properties, String key) {
@@ -905,7 +925,7 @@ public final class ConfigUtils {
      * See https://datatracker.ietf.org/doc/html/rfc1340
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a valid IP port
      */
     public static int getRequiredPort(Map<String, ?> properties, String key) {
@@ -934,7 +954,7 @@ public final class ConfigUtils {
      * Parse a Regex pattern from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a compiled Pattern (never null)
      */
     public static Pattern getRequiredRegexPattern(Map<String, ?> properties, String key) {
@@ -952,7 +972,7 @@ public final class ConfigUtils {
      * Read a string from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return non-blank, non-empty, non-null string
      */
     public static String getRequiredString(Map<String, ?> properties, String key) {
@@ -982,7 +1002,7 @@ public final class ConfigUtils {
      * Parse a URI from the value.
      *
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a URI (never null)
      */
     public static URI getRequiredURI(Map<String, ?> properties, String key) {
@@ -1010,7 +1030,7 @@ public final class ConfigUtils {
 
     /**
      * @param properties instance to read
-     * @param key property name
+     * @param key        property name
      * @return a UUID from the value
      */
     public static UUID getRequiredUUID(Map<String, ?> properties, String key) {
@@ -1019,6 +1039,59 @@ public final class ConfigUtils {
 
         final var value = getRequiredString(properties, key);
         return UUID.fromString(value);
+    }
+
+    /**
+     * Example:
+     * a.b[0].c.d=foo
+     * a.b[1].c.d=bar
+     * <p>
+     * indexes start at zero, no gaps,
+     * <p>
+     * property order in property file is ignored.
+     *
+     * @param properties instance to read
+     * @param keyPrefix  part before the [0], [1], ... see tests
+     * @return matching entries, prefix removed from the key, values parsed as strings
+     */
+    public static List<List<ListPropertyEntry<?>>> getStringList(
+            Map<String, ?> properties,
+            String keyPrefix) {
+
+        requireNonNull(properties, "properties are required and null.");
+
+        checkArgument(keyPrefix != null && !keyPrefix.isBlank(), "keyPrefix is required");
+        checkArgument(keyPrefix.equals(keyPrefix.strip()), "keyPrefix must be trimmed");
+        checkArgument(!keyPrefix.endsWith("]"), "keyPrefix must not end with ']'");
+        checkArgument(!keyPrefix.endsWith("["), "keyPrefix must not end with '['");
+
+        final var out = new ArrayList<List<ListPropertyEntry<?>>>(32);
+
+        // TODO: rename and make constant
+        final Pattern rename4 = Pattern.compile("\\[(\\d+)\\](\\.)?(.*)");
+
+        for (var entry : properties.entrySet()) {
+            if (!entry.getKey().startsWith(keyPrefix)) {
+                continue;
+            }
+
+            final var afterPrefix = entry.getKey().substring(keyPrefix.length());
+            final var m = rename4.matcher(afterPrefix);
+            if (!m.matches()) {
+                continue;
+            }
+
+            final var arrayIndex = Integer.parseInt(m.group(1));
+            final var shortKey = m.group(3).strip();
+
+            final var outEntry = ListPropertyEntry.Builder.builder()
+//            out.add(Map.entry(
+//                    entry.getKey().substring(prefix.length()),
+//                    entry.getValue()));
+            throw new RuntimeException("TODO: implement me");
+        }
+
+        return List.copyOf(out);
     }
 
     /**

@@ -28,6 +28,13 @@ configure<JavaPluginExtension> {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+tasks {
+    compileTestJava {
+        sourceCompatibility = JavaVersion.VERSION_21.toString()
+        targetCompatibility = JavaVersion.VERSION_21.toString()
+    }
+}
+
 dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
 

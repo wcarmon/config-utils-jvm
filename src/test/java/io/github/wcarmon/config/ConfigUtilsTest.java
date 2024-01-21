@@ -8,13 +8,16 @@ import static io.github.wcarmon.config.ConfigUtils.getOptionalBoolean;
 import static io.github.wcarmon.config.ConfigUtils.getOptionalInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
@@ -123,6 +126,25 @@ class ConfigUtilsTest {
     }
 
     @Test
+    void testGetDelimitedStrings_multiline() throws Exception {
+        final var k = "a";
+
+        final var propsContent = """
+                a=one, \
+                  two, \
+                  three,
+                """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        assertEquals(
+                List.of("one", "two", "three"),
+                getDelimitedStrings(m, k, ",", false));
+    }
+
+    @Test
     void testGetDelimitedStrings_single() {
         final var k = "a";
 
@@ -225,4 +247,36 @@ class ConfigUtilsTest {
         // -- null default
         assertNull(getOptionalInt(Map.of(), k, null));
     }
+
+    @Test
+    void testIndexBasedArray_positive() throws Exception {
+        final var keyPrefix = "a.b";
+
+        final var propsContent = """
+                a.b[0].c.d=foo
+                a.b[1].c.d=bar
+                """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+        assertNotNull(got);
+        assertEquals(2, got.size());
+
+        assertEquals("a.b[0].c.d", got.get(0).fullKey());
+        assertEquals("c.d", got.get(0).shortKey());
+        assertEquals("foo", got.get(0).value());
+
+        assertEquals("a.b[1].c.d", got.get(1).fullKey());
+        assertEquals("c.d", got.get(1).shortKey());
+        assertEquals("bar", got.get(1).value());
+    }
+
+    // TODO: positive case for a.b[i]=5
+    // TODO: negative cases for prefix
+    // TODO: negative case: missing index
+    // TODO: negative case: index must start at zero
+
 }
