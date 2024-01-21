@@ -13,25 +13,15 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class ListPropertyEntry<V> {
 
-    /**
-     * Original key from Property or Map
-     */
+    /** Original key from Property or Map */
     private final String fullKey;
 
-    /**
-     * After the array index
-     */
+    /** After the array index */
     private final String shortKey;
 
-    /**
-     * Anything acceptable for Map value
-     */
+    /** Anything acceptable for Map value */
     @Nullable
     private final V value;
-
-    public static <T> Builder<T> builder() {
-        return new Builder<>();
-    }
 
     private ListPropertyEntry(Builder<V> builder) {
         requireNonNull(builder, "builder is required and null.");
@@ -50,12 +40,18 @@ public final class ListPropertyEntry<V> {
         }
     }
 
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ListPropertyEntry<?> listEntry = (ListPropertyEntry<?>) o;
-        return Objects.equals(fullKey, listEntry.fullKey) && Objects.equals(shortKey, listEntry.shortKey) && Objects.equals(value, listEntry.value);
+        return Objects.equals(fullKey, listEntry.fullKey)
+                && Objects.equals(shortKey, listEntry.shortKey)
+                && Objects.equals(value, listEntry.value);
     }
 
     public String fullKey() {
@@ -73,11 +69,16 @@ public final class ListPropertyEntry<V> {
 
     @Override
     public String toString() {
-        return "ListEntry{" +
-                "fullKey='" + fullKey + '\'' +
-                ", shortKey='" + shortKey + '\'' +
-                ", value=" + value +
-                '}';
+        return "ListEntry{"
+                + "fullKey='"
+                + fullKey
+                + '\''
+                + ", shortKey='"
+                + shortKey
+                + '\''
+                + ", value="
+                + value
+                + '}';
     }
 
     public V value() {

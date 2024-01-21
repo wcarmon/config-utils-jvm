@@ -129,7 +129,8 @@ class ConfigUtilsTest {
     void testGetDelimitedStrings_multiline() throws Exception {
         final var k = "a";
 
-        final var propsContent = """
+        final var propsContent =
+                """
                 a=one, \
                   two, \
                   three,
@@ -139,9 +140,7 @@ class ConfigUtilsTest {
         properties.load(new StringReader(propsContent));
         final var m = ConfigUtils.toMap(properties);
 
-        assertEquals(
-                List.of("one", "two", "three"),
-                getDelimitedStrings(m, k, ",", false));
+        assertEquals(List.of("one", "two", "three"), getDelimitedStrings(m, k, ",", false));
     }
 
     @Test
@@ -249,10 +248,39 @@ class ConfigUtilsTest {
     }
 
     @Test
+    void testIndexBasedArray_badPrefix() throws Exception {
+        // -- Arrange
+        final var propsContent = """
+                a.b[15].c.d=bar
+                """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        List.of(
+                        "", " ", " a.b ", " a.b", "\t", "a.b ", "a.b[", "a.b[-1]", "a.b[0] ",
+                        "a.b[0]", "a.b[]", "a.b[n] ", "a.b[n] ", "a.b[n]")
+                .forEach(
+                        keyPrefix -> {
+
+                            // -- Act & Assert
+                            try {
+                                ConfigUtils.consumeStringList(m, keyPrefix);
+
+                                fail("must throw for keyPrefix=" + keyPrefix);
+                            } catch (IllegalArgumentException expected) {
+                                // -- expected
+                            }
+                        });
+    }
+
+    @Test
     void testIndexBasedArray_noneMatchPrefix() throws Exception {
         final var keyPrefix = "a.b";
 
-        final var propsContent = """
+        final var propsContent =
+                """
                 a.b.c=v
                 a.b.c[0]=v
                 b[0]=v
@@ -263,7 +291,10 @@ class ConfigUtilsTest {
         properties.load(new StringReader(propsContent));
         final var m = ConfigUtils.toMap(properties);
 
+        // -- Act
         final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+
+        // -- Assert
         assertNotNull(got);
         assertEquals(0, got.size());
     }
@@ -272,7 +303,8 @@ class ConfigUtilsTest {
     void testIndexBasedArray_positive_noSuffix() throws Exception {
         final var keyPrefix = "a.b";
 
-        final var propsContent = """
+        final var propsContent =
+                """
                 a.b[8]=baz
                 a.b[4]=quux
 
@@ -284,7 +316,10 @@ class ConfigUtilsTest {
         properties.load(new StringReader(propsContent));
         final var m = ConfigUtils.toMap(properties);
 
+        // -- Act
         final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+
+        // -- Assert
         assertNotNull(got);
         assertEquals(2, got.size());
 
@@ -301,7 +336,8 @@ class ConfigUtilsTest {
     void testIndexBasedArray_positive_withSuffix() throws Exception {
         final var keyPrefix = "a.b";
 
-        final var propsContent = """
+        final var propsContent =
+                """
                 a.b[15].c.d=bar
                 a.b[3].c.d=foo
 
@@ -312,7 +348,10 @@ class ConfigUtilsTest {
         properties.load(new StringReader(propsContent));
         final var m = ConfigUtils.toMap(properties);
 
+        // -- Act
         final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+
+        // -- Assert
         assertNotNull(got);
         assertEquals(2, got.size());
 
@@ -325,10 +364,30 @@ class ConfigUtilsTest {
         assertEquals("bar", got.get(1).value());
     }
 
-    // TODO: positive case for a.b[i]=5
-    // TODO: negative cases for prefix
-    // TODO: negative case: missing index
-    // TODO: negative case: negative index
+    @Test
+    void testIndexBasedArray_rejectPartialConstruction() throws Exception {
+
+        final var keyPrefix = "b";
+        final var propsContent =
+                """
+                        b[15].c=bar
+                        b[15].c.d=quux
+                        """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        // -- Act & Assert
+        try {
+            ConfigUtils.consumeStringList(m, keyPrefix);
+            fail("must throw");
+
+        } catch (IllegalArgumentException expected) {
+            // -- expected
+        }
+    }
+
     // TODO: negative case: duplicate index
     // TODO: negative case: index must start at zero
 
