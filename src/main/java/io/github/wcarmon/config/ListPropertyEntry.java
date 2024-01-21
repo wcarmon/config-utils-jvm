@@ -3,7 +3,6 @@ package io.github.wcarmon.config;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
-
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,8 +19,7 @@ public final class ListPropertyEntry<V> {
     private final String shortKey;
 
     /** Anything acceptable for Map value */
-    @Nullable
-    private final V value;
+    @Nullable private final V value;
 
     private ListPropertyEntry(Builder<V> builder) {
         requireNonNull(builder, "builder is required and null.");
@@ -90,11 +88,9 @@ public final class ListPropertyEntry<V> {
 
         private String fullKey;
         private String shortKey;
-        @Nullable
-        private V value;
+        @Nullable private V value;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         public static <V> Builder<V> builder() {
             return new Builder<>();

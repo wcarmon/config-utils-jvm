@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -40,7 +39,7 @@ class ConfigUtilsTest {
         // -- Act
 
         try {
-            consumeDelimitedBytes(Map.of(k, "12, 256"), k, ",");
+            consumeDelimitedBytes(Map.of(k, "12, 256"), k, ",", 10);
             fail("must throw");
         } catch (NumberFormatException expected) {
             // expected
@@ -56,7 +55,7 @@ class ConfigUtilsTest {
         // -- Act
 
         try {
-            consumeDelimitedBytes(Map.of(k, "16, -1"), k, ",");
+            consumeDelimitedBytes(Map.of(k, "16, -1"), k, ",", 10);
             fail("must throw");
         } catch (NumberFormatException expected) {
             // expected
@@ -70,7 +69,7 @@ class ConfigUtilsTest {
         final var k = "a";
 
         // -- Act
-        final var got = getDelimitedBytes(Map.of(k, "133,0, 44,67,255 "), k, ",");
+        final var got = getDelimitedBytes(Map.of(k, "133,0, 44,67,255 "), k, ",", 10);
 
         // -- Assert
         assertEquals(5, got.length);
@@ -290,6 +289,62 @@ class ConfigUtilsTest {
 
         // -- null default
         assertNull(getOptionalInt(Map.of(), k, null));
+    }
+
+    @Test
+    void testGetPorts() {
+        // -- Arrange
+        final var k = "a";
+
+        // -- Act
+        final var got = getDelimitedPorts(Map.of(k, "1024,80,80,80,, 8080,443,,,65535,,"), k, ",");
+
+        // -- Assert
+        assertEquals(5, got.size());
+
+        assertEquals(1024, got.get(0));
+        assertEquals(80, got.get(1));
+        assertEquals(8080, got.get(2));
+        assertEquals(443, got.get(3));
+        assertEquals(65535, got.get(4));
+    }
+
+    @Test
+    void testGetPorts_nonInt() {
+        final var k = "a";
+
+        try {
+            getDelimitedPorts(Map.of(k, "zz"), k, ",");
+            fail("must throw");
+        } catch (NumberFormatException expected) {
+            // expected
+        }
+    }
+
+    @Test
+    void testGetPorts_tooHigh() {
+        final var k = "a";
+
+        try {
+            getDelimitedPorts(Map.of(k, "65536,80"), k, ",");
+            fail("must throw");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("65536"));
+            assertTrue(expected.getMessage().contains("high"));
+        }
+    }
+
+    @Test
+    void testGetPorts_tooLow() {
+        final var k = "a";
+
+        try {
+            getDelimitedPorts(Map.of(k, "-1,-2"), k, ",");
+            fail("must throw");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("-1"));
+            assertTrue(expected.getMessage().contains("low"));
+        }
     }
 
     @Test
