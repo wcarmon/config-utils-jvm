@@ -249,12 +249,35 @@ class ConfigUtilsTest {
     }
 
     @Test
-    void testIndexBasedArray_positive() throws Exception {
+    void testIndexBasedArray_noneMatchPrefix() throws Exception {
         final var keyPrefix = "a.b";
 
         final var propsContent = """
-                a.b[0].c.d=foo
-                a.b[1].c.d=bar
+                a.b.c=v
+                a.b.c[0]=v
+                b[0]=v
+                z.b[0]=v
+                """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+        assertNotNull(got);
+        assertEquals(0, got.size());
+    }
+
+    @Test
+    void testIndexBasedArray_positive_noSuffix() throws Exception {
+        final var keyPrefix = "a.b";
+
+        final var propsContent = """
+                a.b[8]=baz
+                a.b[4]=quux
+
+                a.b=y
+                a.b.c=z
                 """;
 
         final var properties = new Properties();
@@ -265,11 +288,39 @@ class ConfigUtilsTest {
         assertNotNull(got);
         assertEquals(2, got.size());
 
-        assertEquals("a.b[0].c.d", got.get(0).fullKey());
+        assertEquals("a.b[4]", got.get(0).fullKey());
+        assertEquals("", got.get(0).shortKey());
+        assertEquals("quux", got.get(0).value());
+
+        assertEquals("a.b[8]", got.get(1).fullKey());
+        assertEquals("", got.get(1).shortKey());
+        assertEquals("baz", got.get(1).value());
+    }
+
+    @Test
+    void testIndexBasedArray_positive_withSuffix() throws Exception {
+        final var keyPrefix = "a.b";
+
+        final var propsContent = """
+                a.b[15].c.d=bar
+                a.b[3].c.d=foo
+
+                e.g.f=7
+                """;
+
+        final var properties = new Properties();
+        properties.load(new StringReader(propsContent));
+        final var m = ConfigUtils.toMap(properties);
+
+        final var got = ConfigUtils.consumeStringList(m, keyPrefix);
+        assertNotNull(got);
+        assertEquals(2, got.size());
+
+        assertEquals("a.b[3].c.d", got.get(0).fullKey());
         assertEquals("c.d", got.get(0).shortKey());
         assertEquals("foo", got.get(0).value());
 
-        assertEquals("a.b[1].c.d", got.get(1).fullKey());
+        assertEquals("a.b[15].c.d", got.get(1).fullKey());
         assertEquals("c.d", got.get(1).shortKey());
         assertEquals("bar", got.get(1).value());
     }
@@ -277,6 +328,8 @@ class ConfigUtilsTest {
     // TODO: positive case for a.b[i]=5
     // TODO: negative cases for prefix
     // TODO: negative case: missing index
+    // TODO: negative case: negative index
+    // TODO: negative case: duplicate index
     // TODO: negative case: index must start at zero
 
 }

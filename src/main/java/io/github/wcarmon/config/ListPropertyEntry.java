@@ -29,6 +29,10 @@ public final class ListPropertyEntry<V> {
     @Nullable
     private final V value;
 
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
     private ListPropertyEntry(Builder<V> builder) {
         requireNonNull(builder, "builder is required and null.");
 
@@ -90,25 +94,25 @@ public final class ListPropertyEntry<V> {
         private Builder() {
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static <V> Builder<V> builder() {
+            return new Builder<V>();
         }
 
-        public ListPropertyEntry build() {
-            return new ListPropertyEntry(this);
+        public ListPropertyEntry<V> build() {
+            return new ListPropertyEntry<>(this);
         }
 
-        public Builder withFullKey(String val) {
+        public Builder<V> fullKey(String val) {
             fullKey = val;
             return this;
         }
 
-        public Builder withShortKey(String val) {
+        public Builder<V> shortKey(String val) {
             shortKey = val;
             return this;
         }
 
-        public Builder withValue(@Nullable V val) {
+        public Builder<V> value(@Nullable V val) {
             value = val;
             return this;
         }

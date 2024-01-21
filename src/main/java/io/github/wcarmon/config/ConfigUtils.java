@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.Nullable;
  * Simplifies building and retrieving values from java.util.Properties or Map with same structure
  */
 public final class ConfigUtils {
+
+    private static final Pattern AFTER_LIST_PROPERTY_PREFIX = Pattern.compile("\\[(\\d+)\\](\\.)?(.*)");
 
     /** https://datatracker.ietf.org/doc/html/rfc1340 */
     public static final int MAX_PORT = 0xffff;
@@ -311,21 +314,7 @@ public final class ConfigUtils {
         properties.remove(key);
         return out;
     }
-
-    /**
-     * TODO
-     *
-     * @param properties instance to read and modify
-     * @param keyPrefix  part before the [0], [1], ... see tests
-     * @return TODO
-     */
-    public static List<ListPropertyEntry<?>> consumeStringList(Map<String, ?> properties, String keyPrefix) {
-        final var out = getStringList(properties, keyPrefix);
-
-        throw new RuntimeException("TODO: implement consumeStringList");
-//        properties.remove(key);
-//        return out;
-    }
+    private static final java.util.logging.Logger LOG = Logger.getLogger(ConfigUtils.class.getName());
 
     /**
      * @param confPath to a *.properties file
@@ -636,26 +625,18 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param properties   instance to read
-     * @param key          property name
-     * @param defaultValue used when value is absent
-     * @return a pattern or the default (never null)
+     * Warns on gaps in the list indexes.
+     * Warns if list indexes don't start at zero.
+     *
+     * @param properties instance to read and modify
+     * @param keyPrefix  part before the [0], [1], ... see tests
+     * @return record with key and value info
+     * @throws IllegalArgumentException on duplicate index
      */
-    public static Pattern getOptionalRegexPattern(
-            Map<String, ?> properties, String key, Pattern defaultValue) {
-        requireNonNull(defaultValue, "defaultValue is required and null.");
-        final var raw = getRequiredString(properties, key);
-
-        try {
-            if (raw.isBlank()) {
-                return defaultValue;
-            }
-
-            return Pattern.compile(raw);
-
-        } catch (Exception ex) {
-            throw new RuntimeException("failed to compile regex pattern for key=" + key, ex);
-        }
+    public static List<ListPropertyEntry<?>> consumeStringList(Map<String, ?> properties, String keyPrefix) {
+        final var out = getStringList(properties, keyPrefix);
+        properties.keySet().removeIf(key -> key.startsWith(keyPrefix));
+        return out;
     }
 
     /**
@@ -951,17 +932,22 @@ public final class ConfigUtils {
     }
 
     /**
-     * Parse a Regex pattern from the value.
-     *
-     * @param properties instance to read
-     * @param key        property name
-     * @return a compiled Pattern (never null)
+     * @param properties   instance to read
+     * @param key          property name
+     * @param defaultValue used when value is absent
+     * @return a pattern or the default (never null)
      */
-    public static Pattern getRequiredRegexPattern(Map<String, ?> properties, String key) {
+    public static Pattern getOptionalRegexPattern(
+            Map<String, ?> properties, String key, Pattern defaultValue) {
+        requireNonNull(defaultValue, "defaultValue is required and null.");
         final var raw = getRequiredString(properties, key);
 
         try {
-            return Pattern.compile(raw);
+            if (raw.isBlank()) {
+                return defaultValue;
+            }
+
+            return java.util.regex.Pattern.compile(raw);
 
         } catch (Exception ex) {
             throw new RuntimeException("failed to compile regex pattern for key=" + key, ex);
@@ -1042,33 +1028,50 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parse a Regex pattern from the value.
+     *
+     * @param properties instance to read
+     * @param key        property name
+     * @return a compiled Pattern (never null)
+     */
+    public static Pattern getRequiredRegexPattern(Map<String, ?> properties, String key) {
+        final var raw = getRequiredString(properties, key);
+
+        try {
+            return java.util.regex.Pattern.compile(raw);
+
+        } catch (Exception ex) {
+            throw new RuntimeException("failed to compile regex pattern for key=" + key, ex);
+        }
+    }
+
+    /**
      * Example:
      * a.b[0].c.d=foo
      * a.b[1].c.d=bar
      * <p>
-     * indexes start at zero, no gaps,
-     * <p>
-     * property order in property file is ignored.
+     * Warns on gaps in the list indexes.
+     * Warns if list indexes don't start at zero.
+     * Property order in property file is ignored, results returned in ascending index order.
      *
      * @param properties instance to read
      * @param keyPrefix  part before the [0], [1], ... see tests
      * @return matching entries, prefix removed from the key, values parsed as strings
+     * @throws IllegalArgumentException on duplicate index
      */
-    public static List<List<ListPropertyEntry<?>>> getStringList(
+    public static List<ListPropertyEntry<?>> getStringList(
             Map<String, ?> properties,
             String keyPrefix) {
 
         requireNonNull(properties, "properties are required and null.");
-
         checkArgument(keyPrefix != null && !keyPrefix.isBlank(), "keyPrefix is required");
         checkArgument(keyPrefix.equals(keyPrefix.strip()), "keyPrefix must be trimmed");
         checkArgument(!keyPrefix.endsWith("]"), "keyPrefix must not end with ']'");
         checkArgument(!keyPrefix.endsWith("["), "keyPrefix must not end with '['");
 
-        final var out = new ArrayList<List<ListPropertyEntry<?>>>(32);
-
-        // TODO: rename and make constant
-        final Pattern rename4 = Pattern.compile("\\[(\\d+)\\](\\.)?(.*)");
+        final var entriesByIndex = new TreeMap<Integer, ListPropertyEntry<?>>();
+        int maxIndex = Integer.MIN_VALUE;
+        int minIndex = Integer.MAX_VALUE;
 
         for (var entry : properties.entrySet()) {
             if (!entry.getKey().startsWith(keyPrefix)) {
@@ -1076,22 +1079,50 @@ public final class ConfigUtils {
             }
 
             final var afterPrefix = entry.getKey().substring(keyPrefix.length());
-            final var m = rename4.matcher(afterPrefix);
+            final var m = AFTER_LIST_PROPERTY_PREFIX.matcher(afterPrefix);
             if (!m.matches()) {
                 continue;
             }
 
-            final var arrayIndex = Integer.parseInt(m.group(1));
-            final var shortKey = m.group(3).strip();
+            final var listIndex = Integer.parseInt(m.group(1));
+            if (listIndex < minIndex) {
+                minIndex = listIndex;
+            }
+            if (listIndex > maxIndex) {
+                maxIndex = listIndex;
+            }
 
-            final var outEntry = ListPropertyEntry.Builder.builder()
-//            out.add(Map.entry(
-//                    entry.getKey().substring(prefix.length()),
-//                    entry.getValue()));
-            throw new RuntimeException("TODO: implement me");
+            checkArgument(!entriesByIndex.containsKey(listIndex),
+                    "duplicate index for list property: index=" + listIndex + ", keyPrefix='" + keyPrefix + "'");
+
+            final var outEntry = ListPropertyEntry.builder()
+                    .fullKey(entry.getKey())
+                    .shortKey(m.group(3).strip())
+                    .value(entry.getValue())
+                    .build();
+
+            entriesByIndex.put(listIndex, outEntry);
         }
 
-        return List.copyOf(out);
+        if (entriesByIndex.isEmpty()) {
+            return List.of();
+        }
+
+        // Invariant: at least one match
+
+        if (minIndex != 0) {
+            LOG.warning("list index should start at zero: minIndex="
+                    + minIndex + ", keyPrefix=" + keyPrefix);
+        }
+
+        if (maxIndex != 0) {
+            LOG.warning("max list index doesn't match list length: size="
+                    + entriesByIndex.size()
+                    + ", maxIndex=" + maxIndex
+                    + ", keyPrefix=" + keyPrefix);
+        }
+
+        return List.copyOf(entriesByIndex.values());
     }
 
     /**
