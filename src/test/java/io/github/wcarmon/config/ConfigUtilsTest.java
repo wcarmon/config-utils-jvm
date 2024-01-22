@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -615,10 +616,10 @@ class ConfigUtilsTest {
         try (final var bw = Files.newBufferedWriter(tmpFile)) {
             bw.write(
                     """
-                    a.b.c=12
-                    d=3.14
-                    h.j=true
-                    s=tree""");
+                            a.b.c=12
+                            d=3.14
+                            h.j=true
+                            s=tree""");
         }
 
         // -- Act
@@ -633,5 +634,21 @@ class ConfigUtilsTest {
         assertEquals("3.14", got.get("d"));
         assertEquals("tree", got.get("s"));
         assertEquals("true", got.get("h.j"));
+    }
+
+    @Test
+    void testSpaceInKey() throws Exception {
+
+        // -- Arrange
+        final var p = new Properties();
+        p.load(new StringReader("""
+                a\\ b\\ c = 45
+                """));
+
+        // -- Act
+        final var s = getRequiredString(toMap(p), "a b c");
+
+        // -- Assert
+        assertEquals("45", s);
     }
 }
