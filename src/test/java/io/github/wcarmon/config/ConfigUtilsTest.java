@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -642,13 +643,15 @@ class ConfigUtilsTest {
         // -- Arrange
         final var p = new Properties();
         p.load(new StringReader("""
-                a\\ b\\ c = 45
+                a\\ b\\ c = foo bar
                 """));
+
+        assertEquals("foo bar", p.getProperty("a b c"));
 
         // -- Act
         final var s = getRequiredString(toMap(p), "a b c");
 
         // -- Assert
-        assertEquals("45", s);
+        assertEquals("foo bar", s);
     }
 }
