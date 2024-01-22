@@ -54,11 +54,13 @@ public final class ConfigUtils {
     /**
      * Copy all entries from properties with given prefix to a new Map
      *
+     * <p>See also filterByPrefix
+     *
      * @param properties instance to read
      * @param keyPrefix eg. "a.b."
      * @return a new mutable Map with a subset of entries from properties, with given prefix
      */
-    public static Map<String, Object> buildMutableMapForKeyPrefix(
+    public static Map<String, ConfigEntry<?>> buildEntriesForPrefix(
             Map<String, ?> properties, String keyPrefix) {
 
         requireNonNull(properties, "properties is required and null.");
@@ -70,18 +72,22 @@ public final class ConfigUtils {
             throw new IllegalArgumentException("keyPrefix must be trimmed");
         }
 
-        //        if (keyPrefix.endsWith(".")) {
-        //            throw new IllegalArgumentException("keyPrefix must not end with a
-        // dot/period");
-        //        }
-
-        final var out = new HashMap<String, Object>(properties.size());
+        final var out = new HashMap<String, ConfigEntry<?>>(properties.size());
         for (var entry : properties.entrySet()) {
             if (!entry.getKey().startsWith(keyPrefix)) {
                 continue;
             }
 
-            out.put(entry.getKey(), entry.getValue());
+            final var shortKey = entry.getKey().substring(keyPrefix.length()).strip();
+
+            final var newEntry =
+                    ConfigEntry.builder()
+                            .fullKey(entry.getKey())
+                            .shortKey(shortKey)
+                            .value(entry.getValue())
+                            .build();
+
+            out.put(shortKey, newEntry);
         }
 
         return out;
@@ -193,6 +199,20 @@ public final class ConfigUtils {
             Map<String, ?> properties, String key, String delim, boolean removeBlanks) {
 
         final var out = getDelimitedStrings(properties, key, delim, removeBlanks);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Convenience for the common case
+     *
+     * @param properties instance to read and modify
+     * @param key property name
+     * @return possibly empty, never null
+     */
+    public static List<String> consumeDelimitedStrings(Map<String, ?> properties, String key) {
+
+        final var out = getDelimitedStrings(properties, key, ",", true);
         properties.remove(key);
         return out;
     }
@@ -477,10 +497,45 @@ public final class ConfigUtils {
      * @param keyPrefix part before the [0], [1], ... see tests
      * @return record with key and value info
      */
-    public static List<ListPropertyEntry<?>> consumeStringList(
+    public static List<ConfigEntry<?>> consumeStringList(
             Map<String, ?> properties, String keyPrefix) {
         final var out = getStringList(properties, keyPrefix);
         properties.keySet().removeIf(key -> key.startsWith(keyPrefix));
+        return out;
+    }
+
+    /**
+     * Copy all entries from properties with given prefix to a new Map
+     *
+     * @param properties instance to read
+     * @param keyPrefix eg. "a.b."
+     * @return a new mutable Map with a subset of entries from properties, with given prefix
+     */
+    public static Map<String, ?> filterByPrefix(Map<String, ?> properties, String keyPrefix) {
+
+        requireNonNull(properties, "properties is required and null.");
+        if (keyPrefix == null || keyPrefix.isBlank()) {
+            throw new IllegalArgumentException("keyPrefix is required");
+        }
+
+        if (!Objects.equals(keyPrefix, keyPrefix.strip())) {
+            throw new IllegalArgumentException("keyPrefix must be trimmed");
+        }
+
+        //        if (keyPrefix.endsWith(".")) {
+        //            throw new IllegalArgumentException("keyPrefix must not end with a
+        // dot/period");
+        //        }
+
+        final var out = new HashMap<String, Object>(properties.size());
+        for (var entry : properties.entrySet()) {
+            if (!entry.getKey().startsWith(keyPrefix)) {
+                continue;
+            }
+
+            out.put(entry.getKey(), entry.getValue());
+        }
+
         return out;
     }
 
@@ -1351,8 +1406,7 @@ public final class ConfigUtils {
      * @return matching entries, prefix removed from the key, values parsed as strings
      * @throws IllegalArgumentException on duplicate index
      */
-    public static List<ListPropertyEntry<?>> getStringList(
-            Map<String, ?> properties, String keyPrefix) {
+    public static List<ConfigEntry<?>> getStringList(Map<String, ?> properties, String keyPrefix) {
 
         requireNonNull(properties, "properties are required and null.");
         checkArgument(keyPrefix != null && !keyPrefix.isBlank(), "keyPrefix is required");
@@ -1360,7 +1414,7 @@ public final class ConfigUtils {
         checkArgument(!keyPrefix.endsWith("]"), "keyPrefix must not end with ']'");
         checkArgument(!keyPrefix.endsWith("["), "keyPrefix must not end with '['");
 
-        final var entriesByIndex = new TreeMap<Integer, ListPropertyEntry<?>>();
+        final var entriesByIndex = new TreeMap<Integer, ConfigEntry<?>>();
         int maxIndex = Integer.MIN_VALUE;
         int minIndex = Integer.MAX_VALUE;
 
@@ -1394,7 +1448,7 @@ public final class ConfigUtils {
                             + "'");
 
             final var outEntry =
-                    ListPropertyEntry.builder()
+                    ConfigEntry.builder()
                             .fullKey(entry.getKey())
                             .shortKey(m.group(3).strip())
                             .value(entry.getValue())

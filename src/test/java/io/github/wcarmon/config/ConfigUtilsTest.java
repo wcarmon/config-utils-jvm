@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.junit.jupiter.api.Test;
 
 class ConfigUtilsTest {
@@ -31,6 +30,45 @@ class ConfigUtilsTest {
         consumeOptionalInt(m1, "a", 0);
         consumeOptionalInt(m2, "a", 0);
         consumeOptionalInt(m3, "a", 0);
+    }
+
+    @Test
+    void testBuildEntriesForPrefix() {
+
+        // -- Arrange
+        final var keyPrefix = "a.b.c.";
+
+        final var m = new HashMap<String, Object>();
+        m.put("a.b.c.x", 1);
+        m.put("a.b.c.y", true);
+        m.put("a.b.c.z", 13.179);
+
+        m.put("bar", false);
+        m.put("baz.qux", false);
+        m.put("foo", 2.1);
+
+        // -- Act
+        final var got = buildEntriesForPrefix(Map.copyOf(m), keyPrefix);
+
+        // -- Assert
+        assertNotNull(got);
+        assertEquals(3, got.size());
+
+        assertTrue(got.containsKey("x"));
+        assertTrue(got.containsKey("y"));
+        assertTrue(got.containsKey("z"));
+
+        assertEquals(1, (Integer) got.get("x").value());
+        assertEquals(true, (Boolean) got.get("y").value());
+        assertEquals(13.179, (Double) got.get("z").value());
+
+        assertEquals(keyPrefix + "x", got.get("x").fullKey());
+        assertEquals(keyPrefix + "y", got.get("y").fullKey());
+        assertEquals(keyPrefix + "z", got.get("z").fullKey());
+
+        assertEquals("x", got.get("x").shortKey());
+        assertEquals("y", got.get("y").shortKey());
+        assertEquals("z", got.get("z").shortKey());
     }
 
     @Test
@@ -59,7 +97,7 @@ class ConfigUtilsTest {
                         "zzz");
 
         // -- Act
-        final var got = buildMutableMapForKeyPrefix(m, keyPrefix);
+        final var got = filterByPrefix(m, keyPrefix);
 
         // -- Assert
         assertEquals(4, got.size());
@@ -101,34 +139,6 @@ class ConfigUtilsTest {
         } catch (NumberFormatException expected) {
             // expected
         }
-    }
-
-    @Test
-    void testParseProperties() throws Exception {
-
-        // -- Arrange
-        final var tmpFile = Files.createTempFile("test.", "");
-
-        try (final var bw = Files.newBufferedWriter(tmpFile)) {
-            bw.write("""
-                    a.b.c=12
-                    d=3.14
-                    h.j=true
-                    s=tree""");
-        }
-
-        // -- Act
-        final var got = parseProperties(tmpFile);
-        Files.delete(tmpFile);
-
-        // -- Assert
-        assertNotNull(got);
-        assertEquals(4, got.size());
-
-        assertEquals("12", got.get("a.b.c"));
-        assertEquals("3.14", got.get("d"));
-        assertEquals("tree", got.get("s"));
-        assertEquals("true", got.get("h.j"));
     }
 
     @Test
@@ -594,5 +604,34 @@ class ConfigUtilsTest {
         } catch (IllegalArgumentException expected) {
             // -- expected
         }
+    }
+
+    @Test
+    void testParseProperties() throws Exception {
+
+        // -- Arrange
+        final var tmpFile = Files.createTempFile("test.", "");
+
+        try (final var bw = Files.newBufferedWriter(tmpFile)) {
+            bw.write(
+                    """
+                    a.b.c=12
+                    d=3.14
+                    h.j=true
+                    s=tree""");
+        }
+
+        // -- Act
+        final var got = parseProperties(tmpFile);
+        Files.delete(tmpFile);
+
+        // -- Assert
+        assertNotNull(got);
+        assertEquals(4, got.size());
+
+        assertEquals("12", got.get("a.b.c"));
+        assertEquals("3.14", got.get("d"));
+        assertEquals("tree", got.get("s"));
+        assertEquals("true", got.get("h.j"));
     }
 }

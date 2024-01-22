@@ -10,18 +10,18 @@ import org.jetbrains.annotations.Nullable;
  *
  * @param <V> type of the entry value
  */
-public final class ListPropertyEntry<V> {
+public final class ConfigEntry<V> {
 
     /** Original key from Property or Map */
     private final String fullKey;
 
-    /** After the array index */
+    /** subset of fullKey Part after the array index or after some prefix */
     private final String shortKey;
 
     /** Anything acceptable for Map value */
     @Nullable private final V value;
 
-    private ListPropertyEntry(Builder<V> builder) {
+    private ConfigEntry(Builder<V> builder) {
         requireNonNull(builder, "builder is required and null.");
 
         fullKey = builder.fullKey;
@@ -46,7 +46,7 @@ public final class ListPropertyEntry<V> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ListPropertyEntry<?> listEntry = (ListPropertyEntry<?>) o;
+        ConfigEntry<?> listEntry = (ConfigEntry<?>) o;
         return Objects.equals(fullKey, listEntry.fullKey)
                 && Objects.equals(shortKey, listEntry.shortKey)
                 && Objects.equals(value, listEntry.value);
@@ -96,8 +96,8 @@ public final class ListPropertyEntry<V> {
             return new Builder<>();
         }
 
-        public ListPropertyEntry<V> build() {
-            return new ListPropertyEntry<>(this);
+        public ConfigEntry<V> build() {
+            return new ConfigEntry<>(this);
         }
 
         public Builder<V> fullKey(String val) {

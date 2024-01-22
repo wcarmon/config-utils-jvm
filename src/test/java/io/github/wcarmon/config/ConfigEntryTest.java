@@ -1,6 +1,6 @@
 package io.github.wcarmon.config;
 
-class ListPropertyEntryTest {
+class ConfigEntryTest {
 
     // TODO: validation on ctor
 
