@@ -3,6 +3,7 @@ package io.github.wcarmon.config;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -19,7 +20,8 @@ public final class ConfigEntry<V> {
     private final String shortKey;
 
     /** Anything acceptable for Map value */
-    @Nullable private final V value;
+    @Nullable
+    private final V value;
 
     private ConfigEntry(Builder<V> builder) {
         requireNonNull(builder, "builder is required and null.");
@@ -38,6 +40,12 @@ public final class ConfigEntry<V> {
         }
     }
 
+    /**
+     * Factory for builder.
+     *
+     * @param <T> type of the entry's value
+     * @return new Builder
+     */
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
@@ -52,6 +60,11 @@ public final class ConfigEntry<V> {
                 && Objects.equals(value, listEntry.value);
     }
 
+    /**
+     * accessor for fullKey property
+     *
+     * @return validated fullKey property
+     */
     public String fullKey() {
         return fullKey;
     }
@@ -61,6 +74,11 @@ public final class ConfigEntry<V> {
         return Objects.hash(fullKey, shortKey, value);
     }
 
+    /**
+     * accessor for shortKey property
+     *
+     * @return validated shortKey property
+     */
     public String shortKey() {
         return shortKey;
     }
@@ -79,37 +97,78 @@ public final class ConfigEntry<V> {
                 + '}';
     }
 
+    /**
+     * accessor for value property
+     *
+     * @return entry value
+     */
     @Nullable
     public V value() {
         return value;
     }
 
+    /**
+     * Builder pattern
+     *
+     * @param <V> type of the entry's value
+     */
     public static final class Builder<V> {
 
         private String fullKey;
         private String shortKey;
-        @Nullable private V value;
+        @Nullable
+        private V value;
 
-        private Builder() {}
+        private Builder() {
+        }
 
+        /**
+         * Factory for builder.
+         *
+         * @param <V> type of the entry value
+         * @return a new Builder for ConfigEntry
+         */
         public static <V> Builder<V> builder() {
             return new Builder<>();
         }
 
+        /**
+         * Builder pattern
+         *
+         * @return a new validated ConfigEntry
+         */
         public ConfigEntry<V> build() {
             return new ConfigEntry<>(this);
         }
 
+        /**
+         * Set value for fullKey
+         *
+         * @param val new value
+         * @return this builder
+         */
         public Builder<V> fullKey(String val) {
             fullKey = val;
             return this;
         }
 
+        /**
+         * Set value for shortKey
+         *
+         * @param val new value
+         * @return this builder
+         */
         public Builder<V> shortKey(String val) {
             shortKey = val;
             return this;
         }
 
+        /**
+         * Set value for entry.value
+         *
+         * @param val new value
+         * @return this builder
+         */
         public Builder<V> value(@Nullable V val) {
             value = val;
             return this;
