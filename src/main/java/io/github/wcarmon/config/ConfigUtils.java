@@ -753,6 +753,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Checks passed files in iteration order until one exists.
+     *
      * @param candidates paths to files which may or may not exist
      * @return first existing file or null
      */
@@ -775,6 +777,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses a boolean from a string, boolean, or number value.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
@@ -815,6 +819,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses an int from a string value.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
@@ -862,6 +868,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses a long from a string value.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
@@ -1029,6 +1037,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses an optional URI from a string value.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
@@ -1081,7 +1091,7 @@ public final class ConfigUtils {
     }
 
     /**
-     * Throws when the directory doesn't exist or the path is blank.
+     * Parses a directory path. Throws when the directory doesn't exist or the path is blank.
      *
      * @param properties instance to read
      * @param key        property name
@@ -1106,6 +1116,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses a file path. Throws when file doesn't exist or is a directory.
+     *
      * @param properties instance to read
      * @param key        property name
      * @return a path to an existing file
@@ -1151,6 +1163,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses a required int value from a Map with the given key.
+     *
      * @param properties instance to read
      * @param key        property name
      * @return the int (never null)
@@ -1334,6 +1348,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parse a mandatory UUID from the value.
+     *
      * @param properties instance to read
      * @param key        property name
      * @return a UUID from the value
