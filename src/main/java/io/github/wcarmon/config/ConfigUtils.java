@@ -269,7 +269,7 @@ public final class ConfigUtils {
      * @param properties   instance to read and modify
      * @param key          property name
      * @param defaultValue used when value is absent
-     * @return a string or the (nullable) default
+     * @return a string or the (nullable) defaultValue
      */
     @Nullable
     public static String consumeOptionalString(
@@ -286,7 +286,7 @@ public final class ConfigUtils {
      * @param properties   instance to read and modify
      * @param key          property name
      * @param defaultValue used when value is absent
-     * @return a URI or the (nullable) default
+     * @return a URI or the (nullable) defaultValue
      */
     @Nullable
     public static URI consumeOptionalURI(
@@ -465,13 +465,13 @@ public final class ConfigUtils {
     }
 
     /**
-     * Shallow copy all entries from properties with given prefix to a new Map
-     * See tests for examples.
+     * Shallow copy all entries from properties with given prefix to a new Map See tests for
+     * examples.
      *
      * @param properties instance to read
      * @param keyPrefix  eg. "a.b."
-     * @return a new mutable Map with a subset of entries from properties,
-     * with given prefix.  This removes the (redundant) prefix from returned entry keys.
+     * @return a new mutable Map with a subset of entries from properties, with given prefix. This
+     * removes the (redundant) prefix from returned entry keys.
      */
     public static Map<String, ConfigEntry<?>> filterByPrefix(
             Map<String, ?> properties, String keyPrefix) {
@@ -960,10 +960,12 @@ public final class ConfigUtils {
     }
 
     /**
+     * Reads an optional string value from a Map with the given key.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
-     * @return a string or the (nullable) default
+     * @return a string or the (nullable) defaultValue
      */
     @Nullable
     public static String getOptionalString(
@@ -989,10 +991,12 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses an optional URI from a string value.
+     *
      * @param properties   instance to read
      * @param key          property name
      * @param defaultValue used when value is absent
-     * @return a URI or the (nullable) default
+     * @return a URI or the (nullable) defaultValue
      */
     @Nullable
     public static URI getOptionalURI(
@@ -1433,6 +1437,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses file with property file syntax.
+     *
      * @param confPath to a *.properties file
      * @return new Properties from file at path
      */
@@ -1465,8 +1471,10 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses file with property file syntax.
+     *
      * @param config existing property file path
-     * @return a mutable map with the properties
+     * @return a mutable map with the properties, usable in most methods here.
      */
     public static Map<String, Object> parsePropertiesToMap(Path config) {
         requireNonNull(config, "config is required and null.");
