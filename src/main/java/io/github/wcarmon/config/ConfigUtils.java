@@ -341,7 +341,7 @@ public final class ConfigUtils {
     }
 
     /**
-     * TODO
+     * Consumes/Removes the entry for an existing file path.
      *
      * @param properties instance to read and modify
      * @param key        property name
