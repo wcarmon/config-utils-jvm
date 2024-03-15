@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -50,7 +49,7 @@ class ConfigUtilsTest {
         m.put("foo", 2.1);
 
         // -- Act
-        final var got = buildEntriesForPrefix(Map.copyOf(m), keyPrefix);
+        final var got = filterByPrefix(Map.copyOf(m), keyPrefix);
 
         // -- Assert
         assertNotNull(got);
@@ -103,12 +102,23 @@ class ConfigUtilsTest {
 
         // -- Assert
         assertEquals(4, got.size());
+
+        // -- Assert: non-matching entries removed
         assertFalse(got.containsKey("hh"));
         assertFalse(got.containsKey("yy"));
-        assertTrue(got.containsKey(keyPrefix + "c"));
-        assertTrue(got.containsKey(keyPrefix + "c.d"));
-        assertTrue(got.containsKey(keyPrefix + "e"));
-        assertTrue(got.containsKey(keyPrefix + "f.g"));
+
+        // -- Assert: redundant prefix removed
+        assertFalse(got.containsKey(keyPrefix + "c"));
+        assertFalse(got.containsKey(keyPrefix + "c"));
+        assertFalse(got.containsKey(keyPrefix + "c.d"));
+        assertFalse(got.containsKey(keyPrefix + "e"));
+        assertFalse(got.containsKey(keyPrefix + "f.g"));
+
+        // -- Assert: only matches remain, without redundant prefix
+        assertTrue(got.containsKey("c"));
+        assertTrue(got.containsKey("c.d"));
+        assertTrue(got.containsKey("e"));
+        assertTrue(got.containsKey("f.g"));
     }
 
     @Test

@@ -54,48 +54,6 @@ public final class ConfigUtils {
     }
 
     /**
-     * Copy all entries from properties with given prefix to a new Map
-     *
-     * <p>See also ConfigUtils::filterByPrefix
-     *
-     * @param properties instance to read
-     * @param keyPrefix  eg. "a.b."
-     * @return a new mutable Map with a subset of entries from properties, with given prefix
-     * returned keys lack the prefix
-     */
-    public static Map<String, ConfigEntry<?>> buildEntriesForPrefix(
-            Map<String, ?> properties, String keyPrefix) {
-
-        requireNonNull(properties, "properties is required and null.");
-        if (keyPrefix == null || keyPrefix.isBlank()) {
-            throw new IllegalArgumentException("keyPrefix is required");
-        }
-
-        if (!Objects.equals(keyPrefix, keyPrefix.strip())) {
-            throw new IllegalArgumentException("keyPrefix must be trimmed");
-        }
-
-        final var out = new HashMap<String, ConfigEntry<?>>(properties.size());
-        for (var entry : properties.entrySet()) {
-            if (!entry.getKey().startsWith(keyPrefix)) {
-                continue;
-            }
-
-            final var shortKey = entry.getKey().substring(keyPrefix.length()).strip();
-
-            out.put(
-                    shortKey,
-                    ConfigEntry.builder()
-                            .fullKey(entry.getKey())
-                            .shortKey(shortKey)
-                            .value(entry.getValue())
-                            .build());
-        }
-
-        return out;
-    }
-
-    /**
      * Consumes/Removes a delimited string of bytes from a Map with the given key.
      *
      * @param properties instance to read and modify
@@ -507,13 +465,16 @@ public final class ConfigUtils {
     }
 
     /**
-     * Copy all entries from properties with given prefix to a new Map
+     * Shallow copy all entries from properties with given prefix to a new Map
+     * See tests for examples.
      *
      * @param properties instance to read
      * @param keyPrefix  eg. "a.b."
-     * @return a new mutable Map with a subset of entries from properties, with given prefix
+     * @return a new mutable Map with a subset of entries from properties,
+     * with given prefix.  This removes the (redundant) prefix from returned entry keys.
      */
-    public static Map<String, ?> filterByPrefix(Map<String, ?> properties, String keyPrefix) {
+    public static Map<String, ConfigEntry<?>> filterByPrefix(
+            Map<String, ?> properties, String keyPrefix) {
 
         requireNonNull(properties, "properties is required and null.");
         if (keyPrefix == null || keyPrefix.isBlank()) {
@@ -524,39 +485,24 @@ public final class ConfigUtils {
             throw new IllegalArgumentException("keyPrefix must be trimmed");
         }
 
-        //        if (keyPrefix.endsWith(".")) {
-        //            throw new IllegalArgumentException("keyPrefix must not end with a
-        // dot/period");
-        //        }
-
-        final var out = new HashMap<String, Object>(properties.size());
+        final var out = new HashMap<String, ConfigEntry<?>>(properties.size());
         for (var entry : properties.entrySet()) {
             if (!entry.getKey().startsWith(keyPrefix)) {
                 continue;
             }
 
-            out.put(entry.getKey(), entry.getValue());
+            final var shortKey = entry.getKey().substring(keyPrefix.length()).strip();
+
+            out.put(
+                    shortKey,
+                    ConfigEntry.builder()
+                            .fullKey(entry.getKey())
+                            .shortKey(shortKey)
+                            .value(entry.getValue())
+                            .build());
         }
 
         return out;
-    }
-
-    /**
-     * @param confPath to a *.properties file
-     * @return new Properties from file at path
-     */
-    public static Properties from(Path confPath) {
-        requireNonNull(confPath, "confPath is required and null.");
-
-        final var properties = new Properties();
-        try (var r = Files.newBufferedReader(confPath)) {
-            properties.load(r);
-
-        } catch (Exception ex) {
-            throw new RuntimeException("failed to read/load properties", ex);
-        }
-
-        return properties;
     }
 
     /**
@@ -1487,6 +1433,24 @@ public final class ConfigUtils {
     }
 
     /**
+     * @param confPath to a *.properties file
+     * @return new Properties from file at path
+     */
+    public static Properties parseProperties(Path confPath) {
+        requireNonNull(confPath, "confPath is required and null.");
+
+        final var properties = new Properties();
+        try (var r = Files.newBufferedReader(confPath)) {
+            properties.load(r);
+
+        } catch (Exception ex) {
+            throw new RuntimeException("failed to read/load properties", ex);
+        }
+
+        return properties;
+    }
+
+    /**
      * Read from typical paths for config files, parse to a Map
      *
      * @return a mutable map with the properties
@@ -1497,14 +1461,14 @@ public final class ConfigUtils {
         final var config = getFirstExistingFile(candidates);
         requireNonNull(config, "failed to find config file: checked: " + candidates);
 
-        return parseProperties(config);
+        return parsePropertiesToMap(config);
     }
 
     /**
      * @param config existing property file path
      * @return a mutable map with the properties
      */
-    public static Map<String, Object> parseProperties(Path config) {
+    public static Map<String, Object> parsePropertiesToMap(Path config) {
         requireNonNull(config, "config is required and null.");
         if (!Files.exists(config)) {
             throw new IllegalArgumentException("failed to find config file: " + config);
