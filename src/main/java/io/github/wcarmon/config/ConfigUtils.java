@@ -24,7 +24,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,8 +36,10 @@ public final class ConfigUtils {
 
     /** Meaning the Operating System should select a port number. */
     public static final int MIN_PORT = 0;
+
     /** For parsing booleans, lower case */
     static final Set<String> TRUTHY_VALUES;
+
     private static final Pattern AFTER_LIST_PROPERTY_PREFIX =
             Pattern.compile("\\[(\\d+)\\](\\.)?(.*)");
     private static final java.util.logging.Logger LOG =
@@ -48,8 +49,7 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {
-    }
+    private ConfigUtils() {}
 
     /**
      * Consumes/Removes a delimited string of bytes from a Map with the given key.
@@ -1452,7 +1452,9 @@ public final class ConfigUtils {
     }
 
     /**
-     * @param raw
+     * Coalesce string into boolean
+     *
+     * @param raw any string which might imply true or false
      * @return true when input implies true
      */
     public static boolean isTruthy(@Nullable String raw) {
@@ -1521,7 +1523,7 @@ public final class ConfigUtils {
     }
 
     /**
-     * throw IllegalArgumentException if any vaules remain in the map
+     * throw IllegalArgumentException if any values remain in the map
      *
      * <p>presumably all the other values were already consumed
      *
@@ -1551,6 +1553,8 @@ public final class ConfigUtils {
     }
 
     /**
+     * constant accessor
+     *
      * @return lower case strings which imply true
      */
     public static Set<String> truthyValues() {
