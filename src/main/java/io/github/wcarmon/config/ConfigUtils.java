@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -49,7 +50,8 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {}
+    private ConfigUtils() {
+    }
 
     /**
      * Consumes/Removes a delimited string of bytes from a Map with the given key.
@@ -193,6 +195,23 @@ public final class ConfigUtils {
     }
 
     /**
+     * Consumes/Removes an optional double value from a Map with the given key.
+     *
+     * @param properties   instance to read and modify
+     * @param key          property name
+     * @param defaultValue used when value is absent
+     * @return a double or the default (which may be null)
+     */
+    @Nullable
+    public static Double consumeOptionalDouble(
+            Map<String, ?> properties, String key, Double defaultValue) {
+
+        final var out = getOptionalDouble(properties, key, defaultValue);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
      * Consumes/Removes an optional int value from a Map with the given key.
      *
      * @param properties   instance to read and modify
@@ -321,6 +340,19 @@ public final class ConfigUtils {
      */
     public static Path consumeRequiredDirPath(Map<String, ?> properties, String key) {
         final var out = getRequiredDirPath(properties, key);
+        properties.remove(key);
+        return out;
+    }
+
+    /**
+     * Consumes/Removes a required double value from a Map with the given key.
+     *
+     * @param properties instance to read and modify
+     * @param key        property name*
+     * @return a double or throw when absent
+     */
+    public static double consumeRequiredDouble(Map<String, ?> properties, String key) {
+        final var out = getRequiredDouble(properties, key);
         properties.remove(key);
         return out;
     }
@@ -817,6 +849,48 @@ public final class ConfigUtils {
     }
 
     /**
+     * Parses a double from a string value.
+     *
+     * @param properties   instance to read
+     * @param key          property name
+     * @param defaultValue used when value is absent
+     * @return a double or the default (which may be null)
+     */
+    @Nullable
+    public static Double getOptionalDouble(
+            Map<String, ?> properties, String key, @Nullable Double defaultValue) {
+
+        requireNonNull(properties, "properties are required and null.");
+        checkArgument(key != null && !key.isBlank(), "key is required");
+
+        final var value = properties.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+
+        if (value instanceof Double
+                || value instanceof Float
+                || value instanceof Long
+                || value instanceof Integer
+                || value instanceof Short
+                || value instanceof Byte) {
+            return ((Number) value).doubleValue();
+        }
+
+        if (value instanceof CharSequence) {
+            final var s = value.toString().strip();
+
+            if (s.isBlank()) {
+                return defaultValue;
+            }
+
+            return Double.parseDouble(s);
+        }
+
+        throw new RuntimeException("Failed to coerce type to double: " + value.getClass().getName());
+    }
+
+    /**
      * Parses an int from a string value.
      *
      * @param properties   instance to read
@@ -1087,6 +1161,30 @@ public final class ConfigUtils {
         }
 
         return path;
+    }
+
+    /**
+     * Parse a double from the value.
+     *
+     * @param properties instance to read
+     * @param key        property name
+     * @return a double, (never null)
+     */
+    public static double getRequiredDouble(Map<String, ?> properties, String key) {
+        checkArgument(key != null && !key.isBlank(), "key is required");
+        requireNonNull(properties, "properties is required and null.");
+
+        final var value = properties.get(key);
+        if (value == null) {
+            throw new IllegalArgumentException("property required: '" + key + "'");
+        }
+
+        final var out = getOptionalDouble(properties, key, null);
+        if (out == null) {
+            throw new IllegalArgumentException("property required: '" + key + "'");
+        }
+
+        return out;
     }
 
     /**
