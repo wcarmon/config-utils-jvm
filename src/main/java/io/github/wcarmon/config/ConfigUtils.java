@@ -24,7 +24,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -50,8 +49,7 @@ public final class ConfigUtils {
         TRUTHY_VALUES = Set.of("1", "on", "t", "true", "y", "yes");
     }
 
-    private ConfigUtils() {
-    }
+    private ConfigUtils() {}
 
     /**
      * Consumes/Removes a delimited string of bytes from a Map with the given key.
@@ -887,7 +885,8 @@ public final class ConfigUtils {
             return Double.parseDouble(s);
         }
 
-        throw new RuntimeException("Failed to coerce type to double: " + value.getClass().getName());
+        throw new RuntimeException(
+                "Failed to coerce type to double: " + value.getClass().getName());
     }
 
     /**
