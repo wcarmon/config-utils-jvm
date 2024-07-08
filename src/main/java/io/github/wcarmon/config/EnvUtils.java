@@ -3,13 +3,16 @@ package io.github.wcarmon.config;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.jetbrains.annotations.Nullable;
 
 /** Utilities related to environment variables */
 public final class EnvUtils {
 
+    private EnvUtils() {}
+
     /**
+     * Builds a pretty string for the current environment variables
+     *
      * @return delimited string of environment variables, with sorted keys and values abbreviated
      */
     public static String prettyPrintEnvVars() {
@@ -17,7 +20,10 @@ public final class EnvUtils {
     }
 
     /**
-     * @param delim delimiter between environment variables
+     * Builds a pretty string for the current environment variables
+     *
+     * @param delim     delimiter between environment variables
+     * @param maxLength maximum length of environment variable values
      * @return delimited string of environment variables, with sorted keys and values abbreviated
      */
     public static String prettyPrintEnvVars(String delim, int maxLength) {
