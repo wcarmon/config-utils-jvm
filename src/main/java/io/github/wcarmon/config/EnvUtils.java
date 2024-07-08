@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 /** Utilities related to environment variables */
 public final class EnvUtils {
 
-
     /**
      * @return delimited string of environment variables, with sorted keys and values abbreviated
      */
