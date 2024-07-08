@@ -2,7 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 
 val mvnGroupId = "io.github.wcarmon"
 val mvnArtifactId = "config-utils-jvm" // see settings.gradle.kts
-val mvnVersion = "1.0.11"
+val mvnVersion = "1.0.12"
 
 val ossrhPassword: String = providers.gradleProperty("ossrhPassword").getOrElse("")
 val ossrhUsername: String = providers.gradleProperty("ossrhUsername").getOrElse("")
@@ -38,12 +38,7 @@ tasks {
 dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
-
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }
 
 java {
